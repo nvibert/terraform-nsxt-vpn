@@ -14,34 +14,33 @@ import (
 	"github.com/vmware/vsphere-automation-sdk-go/services/nsxt/model"
 )
 
-var IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS = []string{
-	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_AES_128,
-	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_AES_256,
-	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_AES_GCM_128,
-	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_AES_GCM_192,
-	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_AES_GCM_256,
-	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_NO_ENCRYPTION_AUTH_AES_GMAC_128,
-	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_NO_ENCRYPTION_AUTH_AES_GMAC_192,
-	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_NO_ENCRYPTION_AUTH_AES_GMAC_256,
-	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_NO_ENCRYPTION,
+var IPSecVpnSession_RESOURCE_TYPE = []string{
+
+	model.IPSecVpnSession_RESOURCE_TYPE_POLICYBASEDIPSECVPNSESSION,
+	model.IPSecVpnSession_RESOURCE_TYPE_ROUTEBASEDIPSECVPNSESSION,
+	model.IPSecVpnSession_ENCRYPTION_ALGORITHMS_AES_GCM_256,
+	model.IPSecVpnSession_ENCRYPTION_ALGORITHMS_NO_ENCRYPTION_AUTH_AES_GMAC_128,
+	model.IPSecVpnSession_ENCRYPTION_ALGORITHMS_NO_ENCRYPTION_AUTH_AES_GMAC_192,
+	model.IPSecVpnSession_ENCRYPTION_ALGORITHMS_NO_ENCRYPTION_AUTH_AES_GMAC_256,
+	model.IPSecVpnSession_ENCRYPTION_ALGORITHMS_NO_ENCRYPTION,
 }
 
-var IPSecVpnTunnelProfile_DIGEST_ALGORITHMS = []string{
-	model.IPSecVpnTunnelProfile_DIGEST_ALGORITHMS_SHA1,
-	model.IPSecVpnTunnelProfile_DIGEST_ALGORITHMS_SHA2_256,
-	model.IPSecVpnTunnelProfile_DIGEST_ALGORITHMS_SHA2_384,
-	model.IPSecVpnTunnelProfile_DIGEST_ALGORITHMS_SHA2_512,
+var IPSecVpnSession_DIGEST_ALGORITHMS = []string{
+	model.IPSecVpnSession_DIGEST_ALGORITHMS_SHA1,
+	model.IPSecVpnSession_DIGEST_ALGORITHMS_SHA2_256,
+	model.IPSecVpnSession_DIGEST_ALGORITHMS_SHA2_384,
+	model.IPSecVpnSession_DIGEST_ALGORITHMS_SHA2_512,
 }
 
-var IPSecVpnTunnelProfile_DH_GROUPS = []string{
-	model.IPSecVpnTunnelProfile_DH_GROUPS_GROUP14,
-	model.IPSecVpnTunnelProfile_DH_GROUPS_GROUP2,
-	model.IPSecVpnTunnelProfile_DH_GROUPS_GROUP5,
-	model.IPSecVpnTunnelProfile_DH_GROUPS_GROUP15,
-	model.IPSecVpnTunnelProfile_DH_GROUPS_GROUP16,
-	model.IPSecVpnTunnelProfile_DH_GROUPS_GROUP19,
-	model.IPSecVpnTunnelProfile_DH_GROUPS_GROUP20,
-	model.IPSecVpnTunnelProfile_DH_GROUPS_GROUP21,
+var IPSecVpnSession_DH_GROUPS = []string{
+	model.IPSecVpnSession_DH_GROUPS_GROUP14,
+	model.IPSecVpnSession_DH_GROUPS_GROUP2,
+	model.IPSecVpnSession_DH_GROUPS_GROUP5,
+	model.IPSecVpnSession_DH_GROUPS_GROUP15,
+	model.IPSecVpnSession_DH_GROUPS_GROUP16,
+	model.IPSecVpnSession_DH_GROUPS_GROUP19,
+	model.IPSecVpnSession_DH_GROUPS_GROUP20,
+	model.IPSecVpnSession_DH_GROUPS_GROUP21,
 }
 
 func resourceNsxtPolicyIpsecVpnTunnelProfile() *schema.Resource {
@@ -61,14 +60,14 @@ func resourceNsxtPolicyIpsecVpnTunnelProfile() *schema.Resource {
 			"description":  getDescriptionSchema(),
 			"revision":     getRevisionSchema(),
 			"tag":          getTagsSchema(),
-			"encryption_algorithms": {
-				Type:        schema.TypeSet,
-				Description: "Encryption algorithm is used during Internet Key Exchange(IKE) negotiation. Default is AES_128.",
+			"vpn_type": {
+				Type:        schema.TypeString,
+				Description: " A Policy Based VPN requires to define protect rules that match local and peer subnets. IPSec security associations is negotiated for each pair of local and peer subnet. A Route Based VPN is more flexible, more powerful and recommended over policy based VPN. IP Tunnel port is created and all traffic routed via tunnel port is protected. Routes can be configured statically or can be learned through BGP. A route based VPN is must for establishing redundant VPN session to remote site.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS, false),
+					ValidateFunc: validation.StringInSlice(IPSecVpnSession_RESOURCE_TYPE, false),
 				},
-				Required: true,
+				Required: false,
 			},
 			"digest_algorithms": {
 				Type:        schema.TypeSet,

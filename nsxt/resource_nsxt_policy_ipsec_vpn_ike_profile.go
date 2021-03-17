@@ -105,7 +105,6 @@ func resourceNsxtPolicyIpsecVpnIkeProfileExists(id string, connector *client.Res
 }
 
 func resourceNsxtPolicyIpsecVpnIkeProfileCreate(d *schema.ResourceData, m interface{}) error {
-	log.Println("hello")
 	connector := getPolicyConnector(m)
 
 	// Initialize resource Id and verify this ID is not yet used
@@ -147,14 +146,12 @@ func resourceNsxtPolicyIpsecVpnIkeProfileCreate(d *schema.ResourceData, m interf
 
 func resourceNsxtPolicyIpsecVpnIkeProfileRead(d *schema.ResourceData, m interface{}) error {
 	connector := getPolicyConnector(m)
-	log.Println("Nico-150")
 	id := d.Id()
 	if id == "" {
 		return fmt.Errorf("Error obtaining IpsecVpnIkeProfile ID")
 	}
 
 	var obj model.IPSecVpnIkeProfile
-	log.Println("Nico-157")
 	client := infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
 	var err error
 	obj, err = client.Get(id)
@@ -179,10 +176,9 @@ func resourceNsxtPolicyIpsecVpnIkeProfileUpdate(d *schema.ResourceData, m interf
 	if id == "" {
 		return fmt.Errorf("Error obtaining IpsecVpnIkeProfile ID")
 	}
-	log.Println("Nico-182")
 	displayName := d.Get("display_name").(string)
 	description := d.Get("description").(string)
-	log.Println("Nico-185")
+
 	DhGroups := getStringListFromSchemaSet(d, "dh_groups")
 	DigestAlgorithms := getStringListFromSchemaSet(d, "digest_algorithms")
 	EncryptionAlgorithms := getStringListFromSchemaSet(d, "encryption_algorithms")
