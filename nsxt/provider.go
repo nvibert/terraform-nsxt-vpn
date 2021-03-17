@@ -352,6 +352,7 @@ func Provider() *schema.Provider {
 			"nsxt_policy_ospf_config":                      resourceNsxtPolicyOspfConfig(),
 			"nsxt_policy_ospf_area":                        resourceNsxtPolicyOspfArea(),
 			"nsxt_policy_ipsec_vpn_ike_profile":            resourceNsxtPolicyIpsecVpnIkeProfile(),
+			"nsxt_policy_ipsec_vpn_tunnel_profile":         resourceNsxtPolicyIpsecVpnTunnelProfile(),
 		},
 
 		ConfigureFunc: providerConfigure,

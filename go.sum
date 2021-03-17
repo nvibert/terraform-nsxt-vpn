@@ -282,6 +282,7 @@ github.com/vmihailenco/msgpack v4.0.1+incompatible h1:RMF1enSPeKTlXrXdOcqjFUElyw
 github.com/vmihailenco/msgpack v4.0.1+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmware/go-vmware-nsxt v0.0.0-20201201191552-e8b90e7eb469 h1:k5WnSRR2XOEfr23tGKSjljyhJW7SOhI1C8Ct4tZmpIA=
 github.com/vmware/go-vmware-nsxt v0.0.0-20201201191552-e8b90e7eb469/go.mod h1:VEqcmf4Sp7gPB7z05QGyKVmn6xWppr7Nz8cVNvyC80o=
+github.com/vmware/vsphere-automation-sdk-go v0.0.0-20201223200124-825847d02dad h1:bbH5s768Dzcjj7v2tEwggvc3IN6uqRqRthiIj0azFUg=
 github.com/vmware/vsphere-automation-sdk-go/lib v0.3.1 h1:YIcvcshkKm/fbXOvheGfAlGlDTitQXUSMPnYON/uzyg=
 github.com/vmware/vsphere-automation-sdk-go/lib v0.3.1/go.mod h1:lzuoOgc7zhx3bfrKFRDBbaJX3wj4wSstWv4pTpryhJs=
 github.com/vmware/vsphere-automation-sdk-go/runtime v0.3.1 h1:AhoRilMJ6hZbBDr4J9GSrAVpPBkLlZz8+FS84Pdbhc8=

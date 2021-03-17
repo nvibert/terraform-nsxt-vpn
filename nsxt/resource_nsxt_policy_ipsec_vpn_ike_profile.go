@@ -116,9 +116,7 @@ func resourceNsxtPolicyIpsecVpnIkeProfileCreate(d *schema.ResourceData, m interf
 
 	displayName := d.Get("display_name").(string)
 	description := d.Get("description").(string)
-	//DhGroups := d.Get("dh_group").(string)
-	//DigestAlgorithms := d.Get("digest_algorithms").(string)
-	//EncryptionAlgorithms := d.Get("encryption_algorithms").(string)
+
 	DhGroups := getStringListFromSchemaSet(d, "dh_groups")
 	DigestAlgorithms := getStringListFromSchemaSet(d, "digest_algorithms")
 	EncryptionAlgorithms := getStringListFromSchemaSet(d, "encryption_algorithms")
@@ -149,72 +147,64 @@ func resourceNsxtPolicyIpsecVpnIkeProfileCreate(d *schema.ResourceData, m interf
 
 func resourceNsxtPolicyIpsecVpnIkeProfileRead(d *schema.ResourceData, m interface{}) error {
 	connector := getPolicyConnector(m)
-
+	log.Println("Nico-150")
 	id := d.Id()
 	if id == "" {
 		return fmt.Errorf("Error obtaining IpsecVpnIkeProfile ID")
 	}
 
 	var obj model.IPSecVpnIkeProfile
-
+	log.Println("Nico-157")
 	client := infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
 	var err error
 	obj, err = client.Get(id)
 	if err != nil {
 		return handleReadError(d, "IpsecVpnIkeProfile", id, err)
 	}
-
+	log.Println("Nico-164")
 	d.Set("display_name", obj.DisplayName)
 	d.Set("description", obj.Description)
 	setPolicyTagsInSchema(d, obj.Tags)
 	d.Set("nsx_id", id)
 	d.Set("path", obj.Path)
 	d.Set("revision", obj.Revision)
-
+	log.Println("Nico-171")
 	return nil
 }
 
 func resourceNsxtPolicyIpsecVpnIkeProfileUpdate(d *schema.ResourceData, m interface{}) error {
-	/* connector := getPolicyConnector(m)
+	connector := getPolicyConnector(m)
 
-		id := d.Id()
-		if id == "" {
-			return fmt.Errorf("Error obtaining IpsecVpnIkeProfile ID")
-		}
+	id := d.Id()
+	if id == "" {
+		return fmt.Errorf("Error obtaining IpsecVpnIkeProfile ID")
+	}
+	log.Println("Nico-182")
+	displayName := d.Get("display_name").(string)
+	description := d.Get("description").(string)
+	log.Println("Nico-185")
+	DhGroups := getStringListFromSchemaSet(d, "dh_groups")
+	DigestAlgorithms := getStringListFromSchemaSet(d, "digest_algorithms")
+	EncryptionAlgorithms := getStringListFromSchemaSet(d, "encryption_algorithms")
+	log.Println(DhGroups)
+	obj := model.IPSecVpnIkeProfile{
+		DisplayName:          &displayName,
+		Description:          &description,
+		DhGroups:             DhGroups,
+		DigestAlgorithms:     DigestAlgorithms,
+		EncryptionAlgorithms: EncryptionAlgorithms,
+	}
+	log.Println(obj)
+	var err error
+	client := infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
+	err = client.Patch(id, obj)
 
-		// Read the rest of the configured parameters
-		description := d.Get("description").(string)
-		displayName := d.Get("display_name").(string)
-		tags := getPolicyTagsFromSchema(d)
+	if err != nil {
+		return handleUpdateError("IpsecVpnIkeProfile", id, err)
+	}
 
-	        <!GET_ATTRS_FROM_SCHEMA!>
+	return resourceNsxtPolicyIpsecVpnIkeProfileRead(d, m)
 
-	        obj := model.IpsecVpnIkeProfile{
-			DisplayName:    &displayName,
-			Description:    &description,
-			Tags:           tags,
-	                <!SET_ATTRS_IN_OBJ!>
-	        }
-
-		// Update the resource using PATCH
-	        var err error
-	        if isPolicyGlobalManager(m) {
-	            gmObj, convErr := convertModelBindingType(obj, model.IpsecVpnIkeProfileBindingType(), gm_model.IpsecVpnIkeProfileBindingType())
-	            if convErr != nil {
-	                return convErr
-	            }
-	            client := gm_infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
-	            _, err = client.Update(id, gmObj.(gm_model.IpsecVpnIkeProfile))
-	        } else {
-	            client := infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
-	            _, err = client.Update(id, obj)
-	        }
-		if err != nil {
-			return handleUpdateError("IpsecVpnIkeProfile", id, err)
-		}
-
-		return resourceNsxtPolicyIpsecVpnIkeProfileRead(d, m) */
-	return nil
 }
 
 func resourceNsxtPolicyIpsecVpnIkeProfileDelete(d *schema.ResourceData, m interface{}) error {

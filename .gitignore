@@ -1,1 +1,14 @@
+.idea/
+terraform.*
+crash.log
+.terraform/
+terraform-provider-vmc
+.DS_Store
+terraform.tfplan
+terraform.tfstate
+*.backup
+*.bak
+*~
+/*.tf
+.terraform.tfstate.lock.info
 dist/

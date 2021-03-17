@@ -1,0 +1,212 @@
+/* Copyright © 2020 VMware, Inc. All Rights Reserved.
+   SPDX-License-Identifier: MPL-2.0 */
+
+package nsxt
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+        "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+        "github.com/vmware/vsphere-automation-sdk-go/runtime/protocol/client"
+	"github.com/vmware/vsphere-automation-sdk-go/services/nsxt/infra"
+        "github.com/vmware/vsphere-automation-sdk-go/services/nsxt/model"
+        gm_infra "github.com/vmware/vsphere-automation-sdk-go/services/nsxt-gm/global_infra"
+        gm_model "github.com/vmware/vsphere-automation-sdk-go/services/nsxt-gm/model"
+)
+
+<!ENUMS!>
+
+func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceNsxtPolicyIpsecVpnIkeProfileCreate,
+		Read:   resourceNsxtPolicyIpsecVpnIkeProfileRead,
+		Update: resourceNsxtPolicyIpsecVpnIkeProfileUpdate,
+		Delete: resourceNsxtPolicyIpsecVpnIkeProfileDelete,
+		Importer: &schema.ResourceImporter{
+                        State: schema.ImportStatePassthrough,
+		},
+
+		Schema: map[string]*schema.Schema{
+			"nsx_id":         getNsxIDSchema(),
+			"path":           getPathSchema(),
+			"display_name":   getDisplayNameSchema(),
+			"description":    getDescriptionSchema(),
+			"revision":       getRevisionSchema(),
+			"tag":            getTagsSchema(),
+                        <!SCHEMA_ATTRS!>
+		},
+	}
+}
+
+func resourceNsxtPolicyIpsecVpnIkeProfileExists(id string, connector *client.RestConnector, isGlobalManager bool) (bool, error) {
+        var err error
+        if isGlobalManager {
+            client := gm_infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
+             _, err = client.Get(id)
+        } else {
+            client := infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
+            _, err = client.Get(id)
+        }
+	if err == nil {
+		return true, nil
+	}
+
+	if isNotFoundError(err) {
+		return false, nil
+	}
+
+	return false, logAPIError("Error retrieving resource", err)
+}
+
+func resourceNsxtPolicyIpsecVpnIkeProfileCreate(d *schema.ResourceData, m interface{}) error {
+	connector := getPolicyConnector(m)
+
+	// Initialize resource Id and verify this ID is not yet used
+	id, err := getOrGenerateID(d, m, resourceNsxtPolicyIpsecVpnIkeProfileExists)
+	if err != nil {
+		return err
+	}
+
+	displayName := d.Get("display_name").(string)
+	description := d.Get("description").(string)
+	tags := getPolicyTagsFromSchema(d)
+        <!GET_ATTRS_FROM_SCHEMA!>
+
+        obj := model.IpsecVpnIkeProfile{
+		DisplayName:    &displayName,
+		Description:    &description,
+		Tags:           tags,
+                <!SET_ATTRS_IN_OBJ!>
+        }
+
+	// Create the resource using PATCH
+	log.Printf("[INFO] Creating IpsecVpnIkeProfile with ID %s", id)
+        if isPolicyGlobalManager(m) {
+            gmObj, convErr := convertModelBindingType(obj, model.IpsecVpnIkeProfileBindingType(), gm_model.IpsecVpnIkeProfileBindingType())
+            if convErr != nil {
+                return convErr
+            }
+	    client := gm_infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
+            err = client.Patch(id, gmObj.(gm_model.IpsecVpnIkeProfile))
+        } else {
+	    client := infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
+            err = client.Patch(id, obj)
+        }
+	if err != nil {
+		return handleCreateError("IpsecVpnIkeProfile", id, err)
+	}
+
+	d.SetId(id)
+	d.Set("nsx_id", id)
+
+	return resourceNsxtPolicyIpsecVpnIkeProfileRead(d, m)
+}
+
+func resourceNsxtPolicyIpsecVpnIkeProfileRead(d *schema.ResourceData, m interface{}) error {
+	connector := getPolicyConnector(m)
+
+	id := d.Id()
+	if id == "" {
+		return fmt.Errorf("Error obtaining IpsecVpnIkeProfile ID")
+	}
+
+        var obj model.IpsecVpnIkeProfile
+        if isPolicyGlobalManager(m) {
+            client := gm_infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
+            gmObj, err := client.Get(id)
+            if err != nil {
+                return handleReadError(d, "IpsecVpnIkeProfile", id, err)
+            }
+
+            lmObj, err := convertModelBindingType(gmObj, gm_model.IpsecVpnIkeProfileBindingType(), model.IpsecVpnIkeProfileBindingType())
+            if err != nil {
+                return err
+            }
+            obj = lmObj.(model.IpsecVpnIkeProfile)
+        } else {
+	    client := infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
+            var err error
+            obj, err = client.Get(id)
+            if err != nil {
+                return handleReadError(d, "IpsecVpnIkeProfile", id, err)
+            }
+        }
+
+	d.Set("display_name", obj.DisplayName)
+	d.Set("description", obj.Description)
+	setPolicyTagsInSchema(d, obj.Tags)
+	d.Set("nsx_id", id)
+	d.Set("path", obj.Path)
+	d.Set("revision", obj.Revision)
+
+        <!SET_OBJ_ATTRS_IN_SCHEMA!>
+
+	return nil
+}
+
+func resourceNsxtPolicyIpsecVpnIkeProfileUpdate(d *schema.ResourceData, m interface{}) error {
+	connector := getPolicyConnector(m)
+
+	id := d.Id()
+	if id == "" {
+		return fmt.Errorf("Error obtaining IpsecVpnIkeProfile ID")
+	}
+
+	// Read the rest of the configured parameters
+	description := d.Get("description").(string)
+	displayName := d.Get("display_name").(string)
+	tags := getPolicyTagsFromSchema(d)
+
+        <!GET_ATTRS_FROM_SCHEMA!>
+
+        obj := model.IpsecVpnIkeProfile{
+		DisplayName:    &displayName,
+		Description:    &description,
+		Tags:           tags,
+                <!SET_ATTRS_IN_OBJ!>
+        }
+
+	// Update the resource using PATCH
+        var err error
+        if isPolicyGlobalManager(m) {
+            gmObj, convErr := convertModelBindingType(obj, model.IpsecVpnIkeProfileBindingType(), gm_model.IpsecVpnIkeProfileBindingType())
+            if convErr != nil {
+                return convErr
+            }
+            client := gm_infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
+            _, err = client.Update(id, gmObj.(gm_model.IpsecVpnIkeProfile))
+        } else {
+            client := infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
+            _, err = client.Update(id, obj)
+        }
+	if err != nil {
+		return handleUpdateError("IpsecVpnIkeProfile", id, err)
+	}
+
+	return resourceNsxtPolicyIpsecVpnIkeProfileRead(d, m)
+}
+
+func resourceNsxtPolicyIpsecVpnIkeProfileDelete(d *schema.ResourceData, m interface{}) error {
+	id := d.Id()
+	if id == "" {
+		return fmt.Errorf("Error obtaining IpsecVpnIkeProfile ID")
+	}
+
+	connector := getPolicyConnector(m)
+        var err error
+        if isPolicyGlobalManager(m) {
+            client := gm_infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
+            err = client.Delete(id)
+        } else {
+            client := infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
+            err = client.Delete(id)
+        }
+
+	if err != nil {
+		return handleDeleteError("IpsecVpnIkeProfile", id, err)
+	}
+
+	return nil
+}
