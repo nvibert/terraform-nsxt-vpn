@@ -243,6 +243,7 @@ func Provider() *schema.Provider {
 			"nsxt_policy_dhcp_server":               dataSourceNsxtPolicyDhcpServer(),
 			"nsxt_policy_bfd_profile":               dataSourceNsxtPolicyBfdProfile(),
 			"nsxt_policy_intrusion_service_profile": dataSourceNsxtPolicyIntrusionServiceProfile(),
+			"nsxt_policy_ipsec_vpn_ike_profile":     dataSourceNsxtPolicyIPSecVpnIkeProfile(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -353,6 +354,7 @@ func Provider() *schema.Provider {
 			"nsxt_policy_ospf_area":                        resourceNsxtPolicyOspfArea(),
 			"nsxt_policy_ipsec_vpn_ike_profile":            resourceNsxtPolicyIpsecVpnIkeProfile(),
 			"nsxt_policy_ipsec_vpn_tunnel_profile":         resourceNsxtPolicyIpsecVpnTunnelProfile(),
+			"nsxt_policy_ipsec_vpn_session":                resourceNsxtPolicyIPSecVpnSession(),
 		},
 
 		ConfigureFunc: providerConfigure,
