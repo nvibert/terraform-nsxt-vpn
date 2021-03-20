@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/vmware/vsphere-automation-sdk-go/runtime/bindings"
 	"github.com/vmware/vsphere-automation-sdk-go/runtime/data"
 	"github.com/vmware/vsphere-automation-sdk-go/runtime/protocol/client"
 	ipsec_vpn_services "github.com/vmware/vsphere-automation-sdk-go/services/nsxt/infra/tier_0s/locale_services/ipsec_vpn_services"
@@ -176,25 +177,20 @@ func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 	}
 }
 
-func resourceNsxtPolicyIPSecVpnSessionExists(tier0IdParam string, localeServiceIdParam string, serviceIdParam string, sessionIdParam string, id string, connector *client.RestConnector, isGlobalManager bool) (bool, error) {
-	/*
-		var err error
+func resourceNsxtPolicyIPSecVpnSessionExists(tier0IdParam string, localeServiceIdParam string, serviceIdParam string, sessionIdParam string, connector *client.RestConnector, isGlobalManager bool) (bool, error) {
+	client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
+	_, err := client.Get(tier0IdParam, localeServiceIdParam, serviceIdParam, sessionIdParam)
 
-		client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
-		_, err = client.Get(tier0IdParam, localeServiceIdParam, serviceIdParam, id)
+	if err == nil {
+		return true, nil
+	}
 
-		if err == nil {
-			return true, nil
-		}
+	if isNotFoundError(err) {
+		return false, nil
+	}
 
-		if isNotFoundError(err) {
-			return false, nil
-		}
+	return false, logAPIError("Error retrieving resource", err)
 
-		return false, logAPIError("Error retrieving resource", err)
-	*/
-	var err error
-	return true, err
 }
 
 func getTunnelInterfaceSubnetList(d *schema.ResourceData) []model.TunnelInterfaceIPSubnet {
@@ -216,21 +212,10 @@ func getTunnelInterfaceSubnetList(d *schema.ResourceData) []model.TunnelInterfac
 	return TunnelInterfaceSubnetList
 }
 
-func resourceNsxtPolicyIPSecVpnSessionCreate(d *schema.ResourceData, m interface{}) error {
+func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, error) {
+	converter := bindings.NewTypeConverter()
+	converter.SetMode(bindings.REST)
 
-	connector := getPolicyConnector(m)
-
-	Tier0ID := d.Get("tier0_id").(string)
-	LocaleService := d.Get("locale_service").(string)
-	ServiceID := d.Get("service_id").(string)
-
-	id := "nicoprototypeid"
-	var err error
-	// Initialize resource Id and verify this ID is not yet used
-	// id, err := getOrGenerateID(d, m, resourceNsxtPolicyIPSecVpnSessionExists)
-	//if err != nil {
-	//	return err
-	//}
 	log.Println("########################################################1")
 	displayName := d.Get("display_name").(string)
 	log.Println(displayName)
@@ -298,37 +283,63 @@ func resourceNsxtPolicyIPSecVpnSessionCreate(d *schema.ResourceData, m interface
 		Enabled:          &Enabled,
 		TunnelInterfaces: tagList,
 	}
-	log.Println(route_obj)
-
-	map_data_value := map[string]data.DataValue{
-		"display_name":        data.NewStringValue(displayName),
-		"description":         data.NewStringValue(description),
-		"ike_profile_path":    data.NewStringValue(IkeProfilePath),
-		"local_endpoint_path": data.NewStringValue(LocalEndpointPath),
-		"dpd_profile_path":    data.NewStringValue(DpdProfilePath),
-		"tunnel_profile_path": data.NewStringValue(TunnelProfilePath),
-		//"connection_initiation_mode": data.NewStringValue(ConnectionInitiationMode),
-		//"authentication_mode":        data.NewStringValue(AuthenticationMode),
-		"compliance_suite": data.NewStringValue(ComplianceSuite),
-		"resource_type":    data.NewStringValue(ResourceType),
-		"id":               data.NewStringValue(id),
-		"ResourceType":     data.NewStringValue(ResourceType),
-		"enabled":          data.NewBooleanValue(Enabled),
+	dataValue, err := converter.ConvertToVapi(route_obj, model.LBSnatIpPoolBindingType())
+	if err != nil {
+		return nil, err[0]
 	}
 
-	obj := data.NewStructValue("", map_data_value)
+	return dataValue.(*data.StructValue), nil
+}
+
+func resourceNsxtPolicyIPSecVpnSessionCreate(d *schema.ResourceData, m interface{}) error {
+
+	Tier0ID := d.Get("tier0_id").(string)
+	LocaleService := d.Get("locale_service").(string)
+	ServiceID := d.Get("service_id").(string)
+
+	// Initialize resource Id and verify this ID is not yet used
+	id := "randomize_id"
+
+	connector := getPolicyConnector(m)
+
+	obj, err := getIPSecVPNSessionFromSchema(d)
+	if err != nil {
+		return err
+	}
+
+	/*
+		// value_list := data.NewListValue().List()
+		map_data_value := map[string]data.DataValue{
+			"display_name":        data.NewStringValue(displayName),
+			"description":         data.NewStringValue(description),
+			"ike_profile_path":    data.NewStringValue(IkeProfilePath),
+			"local_endpoint_path": data.NewStringValue(LocalEndpointPath),
+			"dpd_profile_path":    data.NewStringValue(DpdProfilePath),
+			"tunnel_profile_path": data.NewStringValue(TunnelProfilePath),
+			//"connection_initiation_mode": data.NewStringValue(ConnectionInitiationMode),
+			//"authentication_mode":        data.NewStringValue(AuthenticationMode),
+			"compliance_suite": data.NewStringValue(ComplianceSuite),
+			"resource_type":    data.NewStringValue(ResourceType),
+			"id":               data.NewStringValue(id),
+			"ResourceType":     data.NewStringValue(ResourceType),
+			"enabled":          data.NewBooleanValue(Enabled),
+			//"TunnelInterfaces": data.NewListValue().tagList,
+		}
+		obj := data.NewStructValue("", map_data_value)
+
+	*/
 
 	client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
 
-	err = client.Patch(Tier0ID, LocaleService, ServiceID, id, obj)
+	//err := client.Patch(Tier0ID, LocaleService, ServiceID, id, obj)
 
 	// Create the resource using PATCH
 	log.Printf("[INFO] Creating IPSecVpnSession with ID %s", id)
 
-	err = client.Patch(Tier0ID, LocaleService, ServiceID, id, obj)
+	err2 := client.Patch(Tier0ID, LocaleService, ServiceID, id, obj)
 
 	log.Println("########################################################")
-	if err != nil {
+	if err2 != nil {
 		return handleCreateError("IPSecVpnSession", id, err)
 	}
 

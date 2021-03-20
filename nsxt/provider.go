@@ -356,6 +356,7 @@ func Provider() *schema.Provider {
 			"nsxt_policy_ipsec_vpn_ike_profile":            resourceNsxtPolicyIpsecVpnIkeProfile(),
 			"nsxt_policy_ipsec_vpn_tunnel_profile":         resourceNsxtPolicyIpsecVpnTunnelProfile(),
 			"nsxt_policy_ipsec_vpn_session":                resourceNsxtPolicyIPSecVpnSession(),
+			"nsxt_policy_l2vpn_session":                    resourceNsxtPolicyL2VPNSession(),
 		},
 
 		ConfigureFunc: providerConfigure,
