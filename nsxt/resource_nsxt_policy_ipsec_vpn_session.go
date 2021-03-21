@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vmware/vsphere-automation-sdk-go/runtime/bindings"
 	"github.com/vmware/vsphere-automation-sdk-go/runtime/data"
 	"github.com/vmware/vsphere-automation-sdk-go/runtime/protocol/client"
@@ -157,21 +158,20 @@ func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 				Optional:    true,
 				Default:     "default",
 			},
-			"subnets": getGatewayInterfaceSubnetsSchema(),
-			/*"ip_address": {
+			"subnets": {
 				Type:        schema.TypeList,
 				Description: "IP Tunnel interfaces.",
 				Optional:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validateCidrOrIPOrRange(),
+					ValidateFunc: validateSingleIP(),
 				},
-			},*/
+			},
 			"prefix_length": {
-				Type:        schema.TypeInt,
-				Description: "Subnet Prefix Length format: int64",
-				Optional:    true,
-				Default:     30,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(1, 255),
+				Description:  "Authentication secret key id for MD5 auth mode",
 			},
 		},
 	}
@@ -216,6 +216,12 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	converter := bindings.NewTypeConverter()
 	converter.SetMode(bindings.REST)
 
+	Psk := d.Get("psk").(string)
+	log.Println(Psk)
+	PeerId := d.Get("peer_id").(string)
+	log.Println(PeerId)
+	PeerAddress := d.Get("peer_address").(string)
+	log.Println(PeerAddress)
 	log.Println("########################################################1")
 	displayName := d.Get("display_name").(string)
 	log.Println(displayName)
@@ -224,11 +230,11 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	log.Println(description)
 	log.Println("########################################################3")
 	IkeProfilePath := d.Get("ike_profile_path").(string)
-	log.Println("########################################################4")
 	log.Println(IkeProfilePath)
+	log.Println("########################################################4")
 	ResourceType := d.Get("vpn_type").(string)
-	log.Println("########################################################5")
 	log.Println(ResourceType)
+	log.Println("########################################################5")
 	LocalEndpointVar := d.Get("local_endpoint_path").(string)
 	var LocalEndpointPath string
 	if LocalEndpointVar == "Private" {
@@ -236,38 +242,57 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	} else {
 		LocalEndpointPath = "/infra/tier-0s/vmc/locale-services/default/ipsec-vpn-services/default/local-endpoints/Public-IP1"
 	}
+	log.Println(LocalEndpointVar)
+	log.Println(LocalEndpointPath)
+	log.Println("########################################################6a")
 	DpdProfilePath := d.Get("dpd_profile_path").(string)
+	log.Println(DpdProfilePath)
 	TunnelProfilePath := d.Get("tunnel_profile_path").(string)
 	log.Println(TunnelProfilePath)
-	log.Println("########################################################6")
+	log.Println("########################################################6b")
 	// ConnectionInitiationMode := d.Get("connection_initiation_mode").(string)
 	// AuthenticationMode := d.Get("authentication_mode").(string)
 	ComplianceSuite := d.Get("compliance_suite").(string)
 	log.Println(ComplianceSuite)
 	log.Println("########################################################7")
-	log.Println("########################################################8")
+	Prefix_length := int64(d.Get("prefix_length").(int))
+	log.Println(Prefix_length)
+	log.Println("########################################################7.1")
 	Enabled := d.Get("enabled").(bool)
+	log.Println(Enabled)
+	log.Println("########################################################8")
+	//TunnelInterface := getStringListFromSchemaSet(d, "subnets")
+	subnet_ts := d.Get("subnets")
+	log.Println(subnet_ts)
+	TunnelInterface := interfaceListToStringList(d.Get("subnets").([]interface{}))
 
 	log.Println("########################################################9")
-	TunnelInterface := getStringListFromSchemaSet(d, "ip_address")
-	Prefix_length := d.Get("prefix_length").(int64)
 	log.Println(Prefix_length)
 	log.Println(TunnelInterface)
-	log.Println(Enabled)
 	log.Println("########################################################10")
 
-	tunnel_interface_subnet_obj := make([]model.IPSecVpnTunnelInterface, 1)
-	//(tunnel_interface_subnet_obj[0]).IpAddresses = TunnelInterface
-	//(tunnel_interface_subnet_obj[0]).PrefixLength = &Prefix_length
-	log.Println(tunnel_interface_subnet_obj)
-	//model.TunnelInterfaceIPSubnet{
-	//	IpAddresses:  TunnelInterface,
-	//	PrefixLength: &Prefix_length,
-	// }
-
-	var tagList []model.IPSecVpnTunnelInterface
-
-	//tunnel_interface_obj.IpSubnets[0] = tunnel_interface_subnet_obj
+	var IPSubnets []model.TunnelInterfaceIPSubnet
+	log.Println(IPSubnets)
+	log.Println("########################################################10.1")
+	IPSubnet := model.TunnelInterfaceIPSubnet{
+		IpAddresses:  TunnelInterface,
+		PrefixLength: &Prefix_length,
+	}
+	log.Println("########################################################10.2")
+	IPSubnets = append(IPSubnets, IPSubnet)
+	log.Println(IPSubnets)
+	log.Println("########################################################10.3")
+	var VTIlist []model.IPSecVpnTunnelInterface
+	log.Println("########################################################10.4")
+	vti := model.IPSecVpnTunnelInterface{
+		IpSubnets: IPSubnets,
+	}
+	log.Println("########################################################10.5")
+	log.Println(VTIlist)
+	log.Println("########################################################10.6")
+	VTIlist = append(VTIlist, vti)
+	log.Println(VTIlist)
+	log.Println("########################################################10.6")
 
 	route_obj := model.RouteBasedIPSecVpnSession{
 		DisplayName:       &displayName,
@@ -281,9 +306,15 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 		//AuthenticationMode:       &AuthenticationMode,
 		ResourceType:     ResourceType,
 		Enabled:          &Enabled,
-		TunnelInterfaces: tagList,
+		TunnelInterfaces: VTIlist,
+		PeerAddress:      &PeerAddress,
+		PeerId:           &PeerId,
+		Psk:              &Psk,
 	}
-	dataValue, err := converter.ConvertToVapi(route_obj, model.LBSnatIpPoolBindingType())
+	log.Println(route_obj)
+	log.Println("########################################################10.7")
+	dataValue, err := converter.ConvertToVapi(route_obj, model.RouteBasedIPSecVpnSessionBindingType())
+	log.Println("########################################################10.7")
 	if err != nil {
 		return nil, err[0]
 	}
@@ -298,7 +329,7 @@ func resourceNsxtPolicyIPSecVpnSessionCreate(d *schema.ResourceData, m interface
 	ServiceID := d.Get("service_id").(string)
 
 	// Initialize resource Id and verify this ID is not yet used
-	id := "randomize_id"
+	id := "randomizedidid"
 
 	connector := getPolicyConnector(m)
 
@@ -307,31 +338,7 @@ func resourceNsxtPolicyIPSecVpnSessionCreate(d *schema.ResourceData, m interface
 		return err
 	}
 
-	/*
-		// value_list := data.NewListValue().List()
-		map_data_value := map[string]data.DataValue{
-			"display_name":        data.NewStringValue(displayName),
-			"description":         data.NewStringValue(description),
-			"ike_profile_path":    data.NewStringValue(IkeProfilePath),
-			"local_endpoint_path": data.NewStringValue(LocalEndpointPath),
-			"dpd_profile_path":    data.NewStringValue(DpdProfilePath),
-			"tunnel_profile_path": data.NewStringValue(TunnelProfilePath),
-			//"connection_initiation_mode": data.NewStringValue(ConnectionInitiationMode),
-			//"authentication_mode":        data.NewStringValue(AuthenticationMode),
-			"compliance_suite": data.NewStringValue(ComplianceSuite),
-			"resource_type":    data.NewStringValue(ResourceType),
-			"id":               data.NewStringValue(id),
-			"ResourceType":     data.NewStringValue(ResourceType),
-			"enabled":          data.NewBooleanValue(Enabled),
-			//"TunnelInterfaces": data.NewListValue().tagList,
-		}
-		obj := data.NewStructValue("", map_data_value)
-
-	*/
-
 	client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
-
-	//err := client.Patch(Tier0ID, LocaleService, ServiceID, id, obj)
 
 	// Create the resource using PATCH
 	log.Printf("[INFO] Creating IPSecVpnSession with ID %s", id)
@@ -351,7 +358,11 @@ func resourceNsxtPolicyIPSecVpnSessionCreate(d *schema.ResourceData, m interface
 
 func resourceNsxtPolicyIPSecVpnSessionRead(d *schema.ResourceData, m interface{}) error {
 	connector := getPolicyConnector(m)
+	converter := bindings.NewTypeConverter()
+	converter.SetMode(bindings.REST)
+
 	id := d.Id()
+	log.Println(id)
 	if id == "" {
 		return fmt.Errorf("Error obtaining IPSecVpnSession ID")
 	}
@@ -359,21 +370,34 @@ func resourceNsxtPolicyIPSecVpnSessionRead(d *schema.ResourceData, m interface{}
 	LocaleService := d.Get("locale_service").(string)
 	ServiceID := d.Get("service_id").(string)
 
-	var obj model.IPSecVpnSession
+	//;var obj model.IPSecVpnSession
 	client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
-	var err error
-	client.Get(Tier0ID, LocaleService, ServiceID, id)
-	// obj, err = client.Get(Tier0ID, LocaleService, ServiceID, id)
+	//var err error
+	//client.Get(Tier0ID, LocaleService, ServiceID, id)
+	obj, err := client.Get(Tier0ID, LocaleService, ServiceID, id)
 
 	if err != nil {
-		return handleReadError(d, "IPSecVpnSession", id, err)
+		if isNotFoundError(err) {
+			d.SetId("")
+			log.Printf("[DEBUG] VPNSession %s not found", id)
+			return nil
+		}
+		return handleReadError(d, "VPN Session", id, err)
 	}
-	d.Set("display_name", obj.DisplayName)
-	d.Set("description", obj.Description)
-	setPolicyTagsInSchema(d, obj.Tags)
-	d.Set("nsx_id", id)
-	d.Set("path", obj.Path)
-	d.Set("revision", obj.Revision)
+
+	interface_vpn, errs := converter.ConvertToGolang(obj, model.RouteBasedIPSecVpnSessionBindingType())
+	if len(errs) > 0 {
+		return fmt.Errorf("Error converting VPN Session %s", errs[0])
+	}
+	blockVPN := interface_vpn.(model.RouteBasedIPSecVpnSession)
+
+	d.Set("display_name", blockVPN.DisplayName)
+	d.Set("description", blockVPN.Description)
+	setPolicyTagsInSchema(d, blockVPN.Tags)
+	d.Set("nsx_id", blockVPN.Id)
+	d.Set("path", blockVPN.Path)
+	d.Set("revision", blockVPN.Revision)
+
 	return nil
 }
 

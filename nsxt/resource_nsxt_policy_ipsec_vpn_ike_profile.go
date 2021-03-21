@@ -56,6 +56,15 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 			"description":  getDescriptionSchema(),
 			"revision":     getRevisionSchema(),
 			"tag":          getTagsSchema(),
+			"ike_version": {
+				Type:        schema.TypeString,
+				Description: "IKE protocol version to be used. IKE-Flex will initiate IKE-V2 and responds to both IKE-V1 and IKE-V2.",
+				/*Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringInSlice(IPSecVpnSession_RESOURCE_TYPE, false),
+				},*/
+				Optional: true,
+			},
 			"encryption_algorithms": {
 				Type:        schema.TypeSet,
 				Description: "Encryption algorithm is used during Internet Key Exchange(IKE) negotiation. Default is AES_128.",
@@ -115,7 +124,7 @@ func resourceNsxtPolicyIpsecVpnIkeProfileCreate(d *schema.ResourceData, m interf
 
 	displayName := d.Get("display_name").(string)
 	description := d.Get("description").(string)
-
+	ike_version := d.Get("ike_version").(string)
 	DhGroups := getStringListFromSchemaSet(d, "dh_groups")
 	DigestAlgorithms := getStringListFromSchemaSet(d, "digest_algorithms")
 	EncryptionAlgorithms := getStringListFromSchemaSet(d, "encryption_algorithms")
@@ -123,6 +132,7 @@ func resourceNsxtPolicyIpsecVpnIkeProfileCreate(d *schema.ResourceData, m interf
 	obj := model.IPSecVpnIkeProfile{
 		DisplayName:          &displayName,
 		Description:          &description,
+		IkeVersion:           &ike_version,
 		DhGroups:             DhGroups,
 		DigestAlgorithms:     DigestAlgorithms,
 		EncryptionAlgorithms: EncryptionAlgorithms,
@@ -178,7 +188,7 @@ func resourceNsxtPolicyIpsecVpnIkeProfileUpdate(d *schema.ResourceData, m interf
 	}
 	displayName := d.Get("display_name").(string)
 	description := d.Get("description").(string)
-
+	ike_version := d.Get("ike_version").(string)
 	DhGroups := getStringListFromSchemaSet(d, "dh_groups")
 	DigestAlgorithms := getStringListFromSchemaSet(d, "digest_algorithms")
 	EncryptionAlgorithms := getStringListFromSchemaSet(d, "encryption_algorithms")
@@ -186,6 +196,7 @@ func resourceNsxtPolicyIpsecVpnIkeProfileUpdate(d *schema.ResourceData, m interf
 	obj := model.IPSecVpnIkeProfile{
 		DisplayName:          &displayName,
 		Description:          &description,
+		IkeVersion:           &ike_version,
 		DhGroups:             DhGroups,
 		DigestAlgorithms:     DigestAlgorithms,
 		EncryptionAlgorithms: EncryptionAlgorithms,
