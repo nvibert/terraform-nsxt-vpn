@@ -77,12 +77,14 @@ func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 				Description:  "Compliance suite.",
 				ValidateFunc: validation.StringInSlice(IPSecVpnSession_CONNECTION_INITIATION_MODE, false),
 				Optional:     true,
+				Default:      "INITIATOR",
 			},
 			"authentication_mode": {
 				Type:         schema.TypeString,
 				Description:  "Peer authentication mode. PSK - In this mode a secret key shared between local and peer sites is to be used for authentication. The secret key can be a string with a maximum length of 128 characters. CERTIFICATE - In this mode a certificate defined at the global level is to be used for authentication.",
 				ValidateFunc: validation.StringInSlice(IPSecVpnSession_AUTHENTICATION_MODE, false),
 				Optional:     true,
+				Default:      "PSK",
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
@@ -237,7 +239,11 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	log.Println(TunnelProfilePath)
 	log.Println("########################################################6b")
 	ConnectionInitiationMode := d.Get("connection_initiation_mode").(string)
+	log.Println(ConnectionInitiationMode)
+	log.Println("########################################################6c")
 	AuthenticationMode := d.Get("authentication_mode").(string)
+	log.Println(AuthenticationMode)
+	log.Println("########################################################6d")
 	ComplianceSuite := d.Get("compliance_suite").(string)
 	log.Println(ComplianceSuite)
 	log.Println("########################################################7")
