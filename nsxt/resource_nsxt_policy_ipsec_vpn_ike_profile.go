@@ -39,6 +39,12 @@ var IPSecVpnIkeProfile_DH_GROUPS = []string{
 	model.IPSecVpnIkeProfile_DH_GROUPS_GROUP21,
 }
 
+var IPSecVpnIkeProfile = []string{
+	model.IPSecVpnIkeProfile_IKE_VERSION_V1,
+	model.IPSecVpnIkeProfile_IKE_VERSION_V2,
+	model.IPSecVpnIkeProfile_IKE_VERSION_FLEX,
+}
+
 func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceNsxtPolicyIpsecVpnIkeProfileCreate,
@@ -57,13 +63,10 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 			"revision":     getRevisionSchema(),
 			"tag":          getTagsSchema(),
 			"ike_version": {
-				Type:        schema.TypeString,
-				Description: "IKE protocol version to be used. IKE-Flex will initiate IKE-V2 and responds to both IKE-V1 and IKE-V2.",
-				/*Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnSession_RESOURCE_TYPE, false),
-				},*/
-				Optional: true,
+				Type:         schema.TypeString,
+				Description:  "IKE protocol version to be used. IKE-Flex will initiate IKE-V2 and responds to both IKE-V1 and IKE-V2.",
+				ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfile, false),
+				Optional:     true,
 			},
 			"encryption_algorithms": {
 				Type:        schema.TypeSet,
@@ -168,14 +171,12 @@ func resourceNsxtPolicyIpsecVpnIkeProfileRead(d *schema.ResourceData, m interfac
 	if err != nil {
 		return handleReadError(d, "IpsecVpnIkeProfile", id, err)
 	}
-	log.Println("Nico-164")
 	d.Set("display_name", obj.DisplayName)
 	d.Set("description", obj.Description)
 	setPolicyTagsInSchema(d, obj.Tags)
 	d.Set("nsx_id", id)
 	d.Set("path", obj.Path)
 	d.Set("revision", obj.Revision)
-	log.Println("Nico-171")
 	return nil
 }
 
@@ -192,7 +193,6 @@ func resourceNsxtPolicyIpsecVpnIkeProfileUpdate(d *schema.ResourceData, m interf
 	DhGroups := getStringListFromSchemaSet(d, "dh_groups")
 	DigestAlgorithms := getStringListFromSchemaSet(d, "digest_algorithms")
 	EncryptionAlgorithms := getStringListFromSchemaSet(d, "encryption_algorithms")
-	log.Println(DhGroups)
 	obj := model.IPSecVpnIkeProfile{
 		DisplayName:          &displayName,
 		Description:          &description,
@@ -201,7 +201,6 @@ func resourceNsxtPolicyIpsecVpnIkeProfileUpdate(d *schema.ResourceData, m interf
 		DigestAlgorithms:     DigestAlgorithms,
 		EncryptionAlgorithms: EncryptionAlgorithms,
 	}
-	log.Println(obj)
 	var err error
 	client := infra.NewDefaultIpsecVpnIkeProfilesClient(connector)
 	err = client.Patch(id, obj)

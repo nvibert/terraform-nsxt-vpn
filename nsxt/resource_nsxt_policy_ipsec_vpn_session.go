@@ -18,7 +18,6 @@ import (
 	"github.com/vmware/vsphere-automation-sdk-go/services/nsxt/model"
 )
 
-/*
 var IPSecVpnSession_RESOURCE_TYPE = []string{
 	model.IPSecVpnSession_RESOURCE_TYPE_POLICYBASEDIPSECVPNSESSION,
 	model.IPSecVpnSession_RESOURCE_TYPE_ROUTEBASEDIPSECVPNSESSION,
@@ -43,7 +42,6 @@ var IPSecVpnSession_COMPLIANCE_SUITE = []string{
 	model.IPSecVpnSession_COMPLIANCE_SUITE_FIPS,
 	model.IPSecVpnSession_COMPLIANCE_SUITE_NONE,
 }
-*/
 
 func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 	return &schema.Resource{
@@ -63,40 +61,28 @@ func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 			"revision":     getRevisionSchema(),
 			"tag":          getTagsSchema(),
 			"vpn_type": {
-				Type:        schema.TypeString,
-				Description: " A Policy Based VPN requires to define protect rules that match local and peer subnets. IPSec security associations is negotiated for each pair of local and peer subnet. A Route Based VPN is more flexible, more powerful and recommended over policy based VPN. IP Tunnel port is created and all traffic routed via tunnel port is protected. Routes can be configured statically or can be learned through BGP. A route based VPN is must for establishing redundant VPN session to remote site.",
-				/*Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnSession_RESOURCE_TYPE, false),
-				},*/
-				Optional: true,
+				Type:         schema.TypeString,
+				Description:  " A Policy Based VPN requires to define protect rules that match local and peer subnets. IPSec security associations is negotiated for each pair of local and peer subnet. A Route Based VPN is more flexible, more powerful and recommended over policy based VPN. IP Tunnel port is created and all traffic routed via tunnel port is protected. Routes can be configured statically or can be learned through BGP. A route based VPN is must for establishing redundant VPN session to remote site.",
+				ValidateFunc: validation.StringInSlice(IPSecVpnSession_RESOURCE_TYPE, false),
+				Optional:     true,
 			},
 			"compliance_suite": {
-				Type:        schema.TypeString,
-				Description: "Connection initiation mode used by local endpoint to establish ike connection with peer site. INITIATOR - In this mode local endpoint initiates tunnel setup and will also respond to incoming tunnel setup requests from peer gateway. RESPOND_ONLY - In this mode, local endpoint shall only respond to incoming tunnel setup requests. It shall not initiate the tunnel setup. ON_DEMAND - In this mode local endpoint will initiate tunnel creation once first packet matching the policy rule is received and will also respond to incoming initiation request.",
-				/*Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnSession_COMPLIANCE_SUITE, false),
-				},*/
-				Optional: true,
+				Type:         schema.TypeString,
+				Description:  "Connection initiation mode used by local endpoint to establish ike connection with peer site. INITIATOR - In this mode local endpoint initiates tunnel setup and will also respond to incoming tunnel setup requests from peer gateway. RESPOND_ONLY - In this mode, local endpoint shall only respond to incoming tunnel setup requests. It shall not initiate the tunnel setup. ON_DEMAND - In this mode local endpoint will initiate tunnel creation once first packet matching the policy rule is received and will also respond to incoming initiation request.",
+				ValidateFunc: validation.StringInSlice(IPSecVpnSession_COMPLIANCE_SUITE, false),
+				Optional:     true,
 			},
 			"connection_initiation_mode": {
-				Type:        schema.TypeString,
-				Description: "Compliance suite.",
-				/*Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnSession_CONNECTION_INITIATION_MODE, false),
-				},*/
-				Optional: true,
+				Type:         schema.TypeString,
+				Description:  "Compliance suite.",
+				ValidateFunc: validation.StringInSlice(IPSecVpnSession_CONNECTION_INITIATION_MODE, false),
+				Optional:     true,
 			},
 			"authentication_mode": {
-				Type:        schema.TypeString,
-				Description: "Peer authentication mode. PSK - In this mode a secret key shared between local and peer sites is to be used for authentication. The secret key can be a string with a maximum length of 128 characters. CERTIFICATE - In this mode a certificate defined at the global level is to be used for authentication.",
-				/*Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnSession_AUTHENTICATION_MODE, false),
-				},*/
-				Optional: true,
+				Type:         schema.TypeString,
+				Description:  "Peer authentication mode. PSK - In this mode a secret key shared between local and peer sites is to be used for authentication. The secret key can be a string with a maximum length of 128 characters. CERTIFICATE - In this mode a certificate defined at the global level is to be used for authentication.",
+				ValidateFunc: validation.StringInSlice(IPSecVpnSession_AUTHENTICATION_MODE, false),
+				Optional:     true,
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
@@ -250,8 +236,8 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	TunnelProfilePath := d.Get("tunnel_profile_path").(string)
 	log.Println(TunnelProfilePath)
 	log.Println("########################################################6b")
-	// ConnectionInitiationMode := d.Get("connection_initiation_mode").(string)
-	// AuthenticationMode := d.Get("authentication_mode").(string)
+	ConnectionInitiationMode := d.Get("connection_initiation_mode").(string)
+	AuthenticationMode := d.Get("authentication_mode").(string)
 	ComplianceSuite := d.Get("compliance_suite").(string)
 	log.Println(ComplianceSuite)
 	log.Println("########################################################7")
@@ -295,21 +281,21 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	log.Println("########################################################10.6")
 
 	route_obj := model.RouteBasedIPSecVpnSession{
-		DisplayName:       &displayName,
-		Description:       &description,
-		IkeProfilePath:    &IkeProfilePath,
-		LocalEndpointPath: &LocalEndpointPath,
-		TunnelProfilePath: &TunnelProfilePath,
-		DpdProfilePath:    &DpdProfilePath,
-		//ConnectionInitiationMode: &ConnectionInitiationMode,
-		ComplianceSuite: &ComplianceSuite,
-		//AuthenticationMode:       &AuthenticationMode,
-		ResourceType:     ResourceType,
-		Enabled:          &Enabled,
-		TunnelInterfaces: VTIlist,
-		PeerAddress:      &PeerAddress,
-		PeerId:           &PeerId,
-		Psk:              &Psk,
+		DisplayName:              &displayName,
+		Description:              &description,
+		IkeProfilePath:           &IkeProfilePath,
+		LocalEndpointPath:        &LocalEndpointPath,
+		TunnelProfilePath:        &TunnelProfilePath,
+		DpdProfilePath:           &DpdProfilePath,
+		ConnectionInitiationMode: &ConnectionInitiationMode,
+		ComplianceSuite:          &ComplianceSuite,
+		AuthenticationMode:       &AuthenticationMode,
+		ResourceType:             ResourceType,
+		Enabled:                  &Enabled,
+		TunnelInterfaces:         VTIlist,
+		PeerAddress:              &PeerAddress,
+		PeerId:                   &PeerId,
+		Psk:                      &Psk,
 	}
 	log.Println(route_obj)
 	log.Println("########################################################10.7")
@@ -366,14 +352,13 @@ func resourceNsxtPolicyIPSecVpnSessionRead(d *schema.ResourceData, m interface{}
 	if id == "" {
 		return fmt.Errorf("Error obtaining IPSecVpnSession ID")
 	}
+
 	Tier0ID := d.Get("tier0_id").(string)
 	LocaleService := d.Get("locale_service").(string)
 	ServiceID := d.Get("service_id").(string)
 
-	//;var obj model.IPSecVpnSession
 	client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
-	//var err error
-	//client.Get(Tier0ID, LocaleService, ServiceID, id)
+
 	obj, err := client.Get(Tier0ID, LocaleService, ServiceID, id)
 
 	if err != nil {
@@ -402,64 +387,55 @@ func resourceNsxtPolicyIPSecVpnSessionRead(d *schema.ResourceData, m interface{}
 }
 
 func resourceNsxtPolicyIPSecVpnSessionUpdate(d *schema.ResourceData, m interface{}) error {
-	/*connector := getPolicyConnector(m)
+	connector := getPolicyConnector(m)
 
 	id := d.Id()
 	if id == "" {
 		return fmt.Errorf("Error obtaining IPSecVpnSession ID")
 	}
 
-	displayName := d.Get("display_name").(string)
-	description := d.Get("description").(string)
-	IkeProfilePath := d.Get("ike_profile_path").(string)
-	LocalEndpointPath := d.Get("local_endpoint_path").(string)
-	DpdProfilePath := d.Get("dpd_profile_path").(string)
-	TunnelProfilePath := d.Get("tunnel_profile_path").(string)
-	ConnectionInitiationMode := d.Get("connection_initiation_mode").(string)
-	AuthenticationMode := d.Get("authentication_mode").(string)
-	ComplianceSuite := d.Get("compliance_suite").(string)
-	ResourceType := d.Get("resource_type").(string)
+	Tier0ID := d.Get("tier0_id").(string)
+	LocaleService := d.Get("locale_service").(string)
+	ServiceID := d.Get("service_id").(string)
 
-	obj := model.IPSecVpnSession{
-		DisplayName:              &displayName,
-		Description:              &description,
-		IkeProfilePath:           &IkeProfilePath,
-		LocalEndpointPath:        &LocalEndpointPath,
-		TunnelProfilePath:        &TunnelProfilePath,
-		DpdProfilePath:           &DpdProfilePath,
-		ConnectionInitiationMode: &ConnectionInitiationMode,
-		ComplianceSuite:          &ComplianceSuite,
-		AuthenticationMode:       &AuthenticationMode,
-		ResourceType:             ResourceType,
-	}
-	var err error
-	client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
-	err = client.Patch(id, obj)
-
+	obj, err := getIPSecVPNSessionFromSchema(d)
 	if err != nil {
+		return err
+	}
+
+	client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
+
+	// Create the resource using PATCH
+	log.Printf("[INFO] Creating IPSecVpnSession with ID %s", id)
+
+	err2 := client.Patch(Tier0ID, LocaleService, ServiceID, id, obj)
+
+	if err2 != nil {
 		return handleUpdateError("IPSecVpnSession", id, err)
 	}
 	d.SetId(id)
 	d.Set("nsx_id", id)
-	return resourceNsxtPolicyIPSecVpnSessionRead(d, m)*/
-	return nil
+	return resourceNsxtPolicyIPSecVpnSessionRead(d, m)
 
 }
 
 func resourceNsxtPolicyIPSecVpnSessionDelete(d *schema.ResourceData, m interface{}) error {
-	/*id := d.Id()
+	id := d.Id()
 	if id == "" {
 		return fmt.Errorf("Error obtaining IPSecVpnSession ID")
 	}
+	Tier0ID := d.Get("tier0_id").(string)
+	LocaleService := d.Get("locale_service").(string)
+	ServiceID := d.Get("service_id").(string)
 
 	connector := getPolicyConnector(m)
 	var err error
 	client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
-	err = client.Delete(id)
+	err = client.Delete(Tier0ID, LocaleService, ServiceID, id)
 
 	if err != nil {
 		return handleDeleteError("IPSecVpnSession", id, err)
 	}
-	*/
+
 	return nil
 }

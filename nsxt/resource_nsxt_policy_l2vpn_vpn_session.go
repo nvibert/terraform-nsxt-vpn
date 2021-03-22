@@ -88,8 +88,6 @@ func resourceNsxtPolicyL2VPNSessionCreate(d *schema.ResourceData, m interface{})
 		Description:      &description,
 		Tags:             tags,
 		TransportTunnels: Transport_Tunnel,
-		// Tunnel encapsulation config. This property only applies in CLIENT mode. It is auto-populated from the L2VPNSessionData.
-		//TunnelEncapsulation *L2VPNTunnelEncapsulation
 	}
 
 	// Create the resource using PATCH
@@ -140,7 +138,11 @@ func resourceNsxtPolicyL2VPNSessionRead(d *schema.ResourceData, m interface{}) e
 }
 
 func resourceNsxtPolicyL2VPNSessionUpdate(d *schema.ResourceData, m interface{}) error {
-	/*connector := getPolicyConnector(m)
+	connector := getPolicyConnector(m)
+	Tier0ID := d.Get("tier0_id").(string)
+	LocaleService := d.Get("locale_service").(string)
+	ServiceID := d.Get("service_id").(string)
+	Transport_Tunnel := getStringListFromSchemaList(d, "transport_tunnels")
 
 	id := d.Id()
 	if id == "" {
@@ -152,57 +154,47 @@ func resourceNsxtPolicyL2VPNSessionUpdate(d *schema.ResourceData, m interface{})
 	displayName := d.Get("display_name").(string)
 	tags := getPolicyTagsFromSchema(d)
 
-	// <!GET_ATTRS_FROM_SCHEMA!>
-
 	obj := model.L2VPNSession{
-		DisplayName: &displayName,
-		Description: &description,
-		Tags:        tags,
-		//        <!SET_ATTRS_IN_OBJ!>
+		DisplayName:      &displayName,
+		Description:      &description,
+		Tags:             tags,
+		TransportTunnels: Transport_Tunnel,
 	}
 
 	// Update the resource using PATCH
 	var err error
-	if isPolicyGlobalManager(m) {
-		gmObj, convErr := convertModelBindingType(obj, model.L2VPNSessionBindingType(), gm_model.L2VPNSessionBindingType())
-		if convErr != nil {
-			return convErr
-		}
-		client := gm_infra.NewDefaultL2VPNSessionsClient(connector)
-		_, err = client.Update(id, gmObj.(gm_model.L2VPNSession))
-	} else {
-		client := infra.NewDefaultL2VPNSessionsClient(connector)
-		_, err = client.Update(id, obj)
-	}
+
+	client := l2vpn_services.NewDefaultSessionsClient(connector)
+	err = client.Patch(Tier0ID, LocaleService, ServiceID, id, obj)
+
 	if err != nil {
 		return handleUpdateError("L2VPNSession", id, err)
 	}
 
 	return resourceNsxtPolicyL2VPNSessionRead(d, m)
-	*/
-	return nil
+
 }
 
 func resourceNsxtPolicyL2VPNSessionDelete(d *schema.ResourceData, m interface{}) error {
-	/*
-		id := d.Id()
-		if id == "" {
-			return fmt.Errorf("Error obtaining L2VPNSession ID")
-		}
 
-		connector := getPolicyConnector(m)
-		var err error
-		if isPolicyGlobalManager(m) {
-			client := gm_infra.NewDefaultL2VPNSessionsClient(connector)
-			err = client.Delete(id)
-		} else {
-			client := infra.NewDefaultL2VPNSessionsClient(connector)
-			err = client.Delete(id)
-		}
+	Tier0ID := d.Get("tier0_id").(string)
+	LocaleService := d.Get("locale_service").(string)
+	ServiceID := d.Get("service_id").(string)
 
-		if err != nil {
-			return handleDeleteError("L2VPNSession", id, err)
-		}
-	*/
+	id := d.Id()
+	if id == "" {
+		return fmt.Errorf("Error obtaining L2VPNSession ID")
+	}
+
+	connector := getPolicyConnector(m)
+	var err error
+
+	client := l2vpn_services.NewDefaultSessionsClient(connector)
+	err = client.Delete(Tier0ID, LocaleService, ServiceID, id)
+
+	if err != nil {
+		return handleDeleteError("L2VPNSession", id, err)
+	}
+
 	return nil
 }
