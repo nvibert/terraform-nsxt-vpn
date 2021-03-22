@@ -308,6 +308,26 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	return dataValue.(*data.StructValue), nil
 }
 
+func resourceNsxtPolicyIpsecVpnIkeSessionExists(id string, connector *client.RestConnector, isGlobalManager bool) (bool, error) {
+	var err error
+	Tier0ID := d.Get("tier0_id").(string)
+	LocaleService := d.Get("locale_service").(string)
+	ServiceID := d.Get("service_id").(string)
+
+	client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
+	_, err = client.Get(Tier0ID, LocaleService, ServiceID, id)
+
+	if err == nil {
+		return true, nil
+	}
+
+	if isNotFoundError(err) {
+		return false, nil
+	}
+
+	return false, logAPIError("Error retrieving resource", err)
+}
+
 func resourceNsxtPolicyIPSecVpnSessionCreate(d *schema.ResourceData, m interface{}) error {
 
 	Tier0ID := d.Get("tier0_id").(string)
@@ -315,7 +335,7 @@ func resourceNsxtPolicyIPSecVpnSessionCreate(d *schema.ResourceData, m interface
 	ServiceID := d.Get("service_id").(string)
 
 	// Initialize resource Id and verify this ID is not yet used
-	id := "randomizedidid"
+	id := newUUID()
 
 	connector := getPolicyConnector(m)
 
