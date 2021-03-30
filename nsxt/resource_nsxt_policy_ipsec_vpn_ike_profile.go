@@ -67,6 +67,7 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 				Description:  "IKE protocol version to be used. IKE-Flex will initiate IKE-V2 and responds to both IKE-V1 and IKE-V2.",
 				ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfile, false),
 				Optional:     true,
+				Default:      "IKE_V2",
 			},
 			"encryption_algorithms": {
 				Type:        schema.TypeSet,
@@ -75,7 +76,8 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfile_ENCRYPTION_ALGORITHMS, false),
 				},
-				Required: true,
+				Optional: true,
+				Default:  "AES_128",
 			},
 			"digest_algorithms": {
 				Type:        schema.TypeSet,
@@ -84,7 +86,8 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfile_DIGEST_ALGORITHMS, false),
 				},
-				Required: true,
+				Optional: true,
+				Default:  "SHA2_256",
 			},
 			"dh_groups": {
 				Type:        schema.TypeSet,
@@ -93,7 +96,8 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfile_DH_GROUPS, false),
 				},
-				Required: true,
+				Optional: true,
+				Default:  "GROUP_14",
 			},
 		},
 	}
