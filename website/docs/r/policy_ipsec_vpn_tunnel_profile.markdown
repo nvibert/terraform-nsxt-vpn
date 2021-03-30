@@ -2,7 +2,7 @@
 subcategory: "Policy - Gateways and Routing"
 layout: "nsxt"
 page_title: "NSXT: nsxt_policy_ipsec_vpn_tunnel_profile"
-description: A resource to configure a IPSec VPN Ike Profile.
+description: A resource to configure a IPSec VPN Tunnel Profile.
 ---
 
 # nsxt_policy_ipsec_vpn_tunnel_profile
