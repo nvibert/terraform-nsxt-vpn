@@ -63,21 +63,23 @@ func resourceNsxtPolicyIpsecVpnTunnelProfile() *schema.Resource {
 			"tag":          getTagsSchema(),
 			"encryption_algorithms": {
 				Type:        schema.TypeSet,
-				Description: "Encryption algorithm is used during Internet Key Exchange(IKE) negotiation. Default is AES_128.",
+				Description: "Encryption algorithm to encrypt/decrypt the messages exchanged between IPSec VPN initiator and responder during tunnel negotiation. Default is AES_GCM_128.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS, false),
 				},
-				Required: true,
+				Optional: true,
+				Default:  "AES_GCM_128",
 			},
 			"digest_algorithms": {
 				Type:        schema.TypeSet,
-				Description: "Algorithm to be used for message digest during Internet Key Exchange(IKE) negotiation. Default is SHA2_256.",
+				Description: "Algorithm to be used for message digest. Default digest algorithm is implicitly covered by default encryption algorithm \"AES_GCM_128\".",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfile_DIGEST_ALGORITHMS, false),
 				},
-				Required: true,
+				Optional: true,
+				Default:  "AES_GCM_128",
 			},
 			"dh_groups": {
 				Type:        schema.TypeSet,
@@ -86,7 +88,8 @@ func resourceNsxtPolicyIpsecVpnTunnelProfile() *schema.Resource {
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfile_DH_GROUPS, false),
 				},
-				Required: true,
+				Optional: true,
+				Default:  "GROUP14",
 			},
 		},
 	}
