@@ -17,19 +17,10 @@ This resource is applicable to NSX Policy Manager and VMC.
 resource "nsxt_policy_ipsec_vpn_ike_profile" "test" {
     display_name      = "test"
     description       = "Terraform provisioned IPSec VPN Ike Profile"
-    ike_profile_path    = nsxt_policy_ipsec_vpn_ike_profile.profile_ike.path
-    tunnel_profile_path = nsxt_policy_ipsec_vpn_tunnel_profile.profile_tunnel.path
-    enabled             = true
-    locale_service      = "default"
-    service_id          = "default"
-    tier0_id            = "vmc"
-    vpn_type            = "RouteBasedIPSecVpnSession"
-    compliance_suite    = "NONE"
-    subnets             = ["169.254.151.2"]
-    prefix_length       = 30
-    peer_address        = "12.12.12.12"
-    peer_id             = "12.12.12.12"
-    psk                 = "None"
+    encryption_algorithms = ["AES_128"]
+    digest_algorithms     = ["SHA2_256"]
+    dh_groups             = ["GROUP14"]
+    ike_version           = "IKE_V2"
 }
 ```
 
@@ -41,19 +32,11 @@ The following arguments are supported:
 * `description` - (Optional) Description of the resource.
 * `tag` - (Optional) A list of scope + tag pairs to associate with this resource.
 * `nsx_id` - (Optional) The NSX ID of this resource. If set, this ID will be used to create the resource.
-* `ike_profile_path` - (Optional)    = nsxt_policy_ipsec_vpn_ike_profile.profile_ike.path
-* `tunnel_profile_path` - (Optional)    tunnel_profile_path = nsxt_policy_ipsec_vpn_tunnel_profile.profile_tunnel.path
-* `enabled` - (Optional)                 = true
-* `locale_service` - (Optional)          = "default"
-* `service_id` - (Optional)              = "default"
-* `tier0_id` - (Optional)                = "vmc"
-* `vpn_type` - (Optional)                = "RouteBasedIPSecVpnSession"
-* `compliance_suite` - (Optional)    compliance_suite    = "NONE"
-* `subnets` - (Optional)                 = ["169.254.151.2"]
-* `prefix_length` - (Optional)           = 30
-* `peer_address` - (Optional)    peer_address        = "12.12.12.12"
-* `peer_id` - (Optional)    peer_id             = "12.12.12.12"
-* `peer_id` - (Optional)    = "None"
+* `ike_version` - (Optional) IKE protocol version to be used. IKE-Flex will initiate IKE-V2 and responds to both IKE-V1 and IKE-V2.
+* `encryption_algorithms` - (Optional) Encryption algorithm is used during Internet Key Exchange(IKE) negotiation. Default is AES_128.
+* `digest_algorithms` - (Optional) Algorithm to be used for message digest during Internet Key Exchange(IKE) negotiation. Default is SHA2_256.
+* `dh_groups` - (Optional) Diffie-Hellman group to be used if PFS is enabled. Default is GROUP14.
+
 
 ## Attributes Reference
 
