@@ -62,7 +62,7 @@ func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 			"tag":          getTagsSchema(),
 			"vpn_type": {
 				Type:         schema.TypeString,
-				Description:  " A Policy Based VPN requires to define protect rules that match local and peer subnets. IPSec security associations is negotiated for each pair of local and peer subnet. A Route Based VPN is more flexible, more powerful and recommended over policy based VPN. IP Tunnel port is created and all traffic routed via tunnel port is protected. Routes can be configured statically or can be learned through BGP. A route based VPN is must for establishing redundant VPN session to remote site.",
+				Description:  "A Policy Based VPN requires to define protect rules that match local and peer subnets. IPSec security associations is negotiated for each pair of local and peer subnet. A Route Based VPN is more flexible, more powerful and recommended over policy based VPN. IP Tunnel port is created and all traffic routed via tunnel port is protected. Routes can be configured statically or can be learned through BGP. A route based VPN is must for establishing redundant VPN session to remote site.",
 				ValidateFunc: validation.StringInSlice(IPSecVpnSession_RESOURCE_TYPE, false),
 				Optional:     true,
 			},
@@ -125,30 +125,30 @@ func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 			},
 			"ike_profile_path": {
 				Type:        schema.TypeString,
-				Description: "Policy path referencing Local endpoint.",
+				Description: "Policy path referencing IKE profile.",
 				Optional:    true,
 			},
 			"tier0_id": {
 				Type:        schema.TypeString,
-				Description: "Policy path referencing Local endpoint.",
+				Description: "Unique identifier of the T0 resource.",
 				Optional:    true,
 				Default:     "vmc",
 			},
 			"locale_service": {
 				Type:        schema.TypeString,
-				Description: "Local_service",
+				Description: "Unique identifier of the Locale Service resource.",
 				Optional:    true,
 				Default:     "default",
 			},
 			"service_id": {
 				Type:        schema.TypeString,
-				Description: "Policy path referencing Local endpoint.",
+				Description: "Unique identifier of the Service.",
 				Optional:    true,
 				Default:     "default",
 			},
 			"subnets": {
 				Type:        schema.TypeList,
-				Description: "IP Tunnel interfaces.",
+				Description: "IP Tunnel interface (commonly referred as VTI) subnet.",
 				Optional:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
@@ -159,7 +159,7 @@ func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: validation.IntBetween(1, 255),
-				Description:  "Authentication secret key id for MD5 auth mode",
+				Description:  "Subnet Prefix Length.",
 			},
 		},
 	}
