@@ -57,9 +57,8 @@ func dataSourceNsxtPolicyIPSecVpnLocalEndpointRead(d *schema.ResourceData, m int
 	ServiceID := d.Get("service_id").(string)
 
 	objID := d.Get("id").(string)
-	log.Println("#############################################")
 	log.Println(objID)
-	log.Println("#############################################")
+
 	objName := d.Get("display_name").(string)
 	client := ipsec_vpn_services.NewDefaultLocalEndpointsClient(connector)
 	var obj model.IPSecVpnLocalEndpoint

@@ -212,13 +212,13 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	description := d.Get("description").(string)
 	IkeProfilePath := d.Get("ike_profile_path").(string)
 	ResourceType := d.Get("vpn_type").(string)
-	LocalEndpointVar := d.Get("local_endpoint_path").(string)
-	var LocalEndpointPath string
-	if LocalEndpointVar == "Private" {
-		LocalEndpointPath = "/infra/tier-0s/vmc/locale-services/default/ipsec-vpn-services/default/local-endpoints/Private-IP1"
-	} else {
-		LocalEndpointPath = "/infra/tier-0s/vmc/locale-services/default/ipsec-vpn-services/default/local-endpoints/Public-IP1"
-	}
+	LocalEndpointPath := d.Get("local_endpoint_path").(string)
+	//var LocalEndpointPath string
+	//if LocalEndpointVar == "Private" {
+	//	LocalEndpointPath = "/infra/tier-0s/vmc/locale-services/default/ipsec-vpn-services/default/local-endpoints/Private-IP1"
+	// else {
+	//	LocalEndpointPath = "/infra/tier-0s/vmc/locale-services/default/ipsec-vpn-services/default/local-endpoints/Public-IP1"
+	//}
 	DpdProfilePath := d.Get("dpd_profile_path").(string)
 	TunnelProfilePath := d.Get("tunnel_profile_path").(string)
 	ConnectionInitiationMode := d.Get("connection_initiation_mode").(string)
