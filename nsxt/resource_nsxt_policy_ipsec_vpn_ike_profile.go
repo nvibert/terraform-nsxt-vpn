@@ -77,7 +77,6 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfile_ENCRYPTION_ALGORITHMS, false),
 				},
 				Optional: true,
-				Default:  "AES_128",
 			},
 			"digest_algorithms": {
 				Type:        schema.TypeSet,
@@ -87,7 +86,6 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfile_DIGEST_ALGORITHMS, false),
 				},
 				Optional: true,
-				Default:  "SHA2_256",
 			},
 			"dh_groups": {
 				Type:        schema.TypeSet,
@@ -97,7 +95,6 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfile_DH_GROUPS, false),
 				},
 				Optional: true,
-				Default:  "GROUP_14",
 			},
 		},
 	}

@@ -246,6 +246,7 @@ func Provider() *schema.Provider {
 			"nsxt_policy_ipsec_vpn_ike_profile":     dataSourceNsxtPolicyIPSecVpnIkeProfile(),
 			"nsxt_policy_ipsec_vpn_tunnel_profile":  dataSourceNsxtPolicyIpsecVpnTunnelProfile(),
 			"nsxt_policy_ipsec_vpn_local_endpoint":  dataSourceNsxtPolicyIPSecVpnLocalEndpoint(),
+			"nsxt_policy_segment":                   dataSourceNsxtPolicySegment(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{

@@ -69,7 +69,6 @@ func resourceNsxtPolicyIpsecVpnTunnelProfile() *schema.Resource {
 					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS, false),
 				},
 				Optional: true,
-				Default:  "AES_GCM_128",
 			},
 			"digest_algorithms": {
 				Type:        schema.TypeSet,
@@ -79,7 +78,6 @@ func resourceNsxtPolicyIpsecVpnTunnelProfile() *schema.Resource {
 					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfile_DIGEST_ALGORITHMS, false),
 				},
 				Optional: true,
-				Default:  "AES_GCM_128",
 			},
 			"dh_groups": {
 				Type:        schema.TypeSet,
@@ -89,7 +87,6 @@ func resourceNsxtPolicyIpsecVpnTunnelProfile() *schema.Resource {
 					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfile_DH_GROUPS, false),
 				},
 				Optional: true,
-				Default:  "GROUP14",
 			},
 		},
 	}

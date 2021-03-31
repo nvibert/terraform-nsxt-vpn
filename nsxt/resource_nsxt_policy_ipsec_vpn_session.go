@@ -14,6 +14,7 @@ import (
 	"github.com/vmware/vsphere-automation-sdk-go/runtime/bindings"
 	"github.com/vmware/vsphere-automation-sdk-go/runtime/data"
 	"github.com/vmware/vsphere-automation-sdk-go/runtime/protocol/client"
+	"github.com/vmware/vsphere-automation-sdk-go/services/nsxt/infra/tier_0s/locale_services/bgp"
 	ipsec_vpn_services "github.com/vmware/vsphere-automation-sdk-go/services/nsxt/infra/tier_0s/locale_services/ipsec_vpn_services"
 	"github.com/vmware/vsphere-automation-sdk-go/services/nsxt/model"
 )
@@ -157,9 +158,9 @@ func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 			},
 			"prefix_length": {
 				Type:         schema.TypeInt,
+				Description:  "Subnet Prefix Length.",
 				Optional:     true,
 				ValidateFunc: validation.IntBetween(1, 255),
-				Description:  "Subnet Prefix Length.",
 			},
 		},
 	}
@@ -205,24 +206,12 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	converter.SetMode(bindings.REST)
 
 	Psk := d.Get("psk").(string)
-	log.Println(Psk)
 	PeerId := d.Get("peer_id").(string)
-	log.Println(PeerId)
 	PeerAddress := d.Get("peer_address").(string)
-	log.Println(PeerAddress)
-	log.Println("########################################################1")
 	displayName := d.Get("display_name").(string)
-	log.Println(displayName)
-	log.Println("########################################################2")
 	description := d.Get("description").(string)
-	log.Println(description)
-	log.Println("########################################################3")
 	IkeProfilePath := d.Get("ike_profile_path").(string)
-	log.Println(IkeProfilePath)
-	log.Println("########################################################4")
 	ResourceType := d.Get("vpn_type").(string)
-	log.Println(ResourceType)
-	log.Println("########################################################5")
 	LocalEndpointVar := d.Get("local_endpoint_path").(string)
 	var LocalEndpointPath string
 	if LocalEndpointVar == "Private" {
@@ -230,62 +219,31 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	} else {
 		LocalEndpointPath = "/infra/tier-0s/vmc/locale-services/default/ipsec-vpn-services/default/local-endpoints/Public-IP1"
 	}
-	log.Println(LocalEndpointVar)
-	log.Println(LocalEndpointPath)
-	log.Println("########################################################6a")
 	DpdProfilePath := d.Get("dpd_profile_path").(string)
-	log.Println(DpdProfilePath)
 	TunnelProfilePath := d.Get("tunnel_profile_path").(string)
-	log.Println(TunnelProfilePath)
-	log.Println("########################################################6b")
 	ConnectionInitiationMode := d.Get("connection_initiation_mode").(string)
-	log.Println(ConnectionInitiationMode)
-	log.Println("########################################################6c")
 	AuthenticationMode := d.Get("authentication_mode").(string)
-	log.Println(AuthenticationMode)
-	log.Println("########################################################6d")
 	ComplianceSuite := d.Get("compliance_suite").(string)
-	log.Println(ComplianceSuite)
-	log.Println("########################################################7")
 	Prefix_length := int64(d.Get("prefix_length").(int))
-	log.Println(Prefix_length)
-	log.Println("########################################################7.1")
 	Enabled := d.Get("enabled").(bool)
-	log.Println(Enabled)
-	log.Println("########################################################8")
-	//TunnelInterface := getStringListFromSchemaSet(d, "subnets")
-	subnet_ts := d.Get("subnets")
-	log.Println(subnet_ts)
+
 	TunnelInterface := interfaceListToStringList(d.Get("subnets").([]interface{}))
-
-	log.Println("########################################################9")
-	log.Println(Prefix_length)
-	log.Println(TunnelInterface)
-	log.Println("########################################################10")
-
 	var IPSubnets []model.TunnelInterfaceIPSubnet
-	log.Println(IPSubnets)
-	log.Println("########################################################10.1")
 	IPSubnet := model.TunnelInterfaceIPSubnet{
 		IpAddresses:  TunnelInterface,
 		PrefixLength: &Prefix_length,
 	}
-	log.Println("########################################################10.2")
 	IPSubnets = append(IPSubnets, IPSubnet)
-	log.Println(IPSubnets)
-	log.Println("########################################################10.3")
 	var VTIlist []model.IPSecVpnTunnelInterface
-	log.Println("########################################################10.4")
-	vti := model.IPSecVpnTunnelInterface{
-		IpSubnets: IPSubnets,
-	}
-	log.Println("########################################################10.5")
-	log.Println(VTIlist)
-	log.Println("########################################################10.6")
-	VTIlist = append(VTIlist, vti)
-	log.Println(VTIlist)
-	log.Println("########################################################10.6")
 
+	vti := model.IPSecVpnTunnelInterface{
+		IpSubnets:   IPSubnets,
+		DisplayName: &displayName,
+	}
+
+	VTIlist = append(VTIlist, vti)
+
+	//if ResourceType == "RouteBasedIPSecVpnSession":
 	route_obj := model.RouteBasedIPSecVpnSession{
 		DisplayName:              &displayName,
 		Description:              &description,
@@ -303,10 +261,8 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 		PeerId:                   &PeerId,
 		Psk:                      &Psk,
 	}
-	log.Println(route_obj)
-	log.Println("########################################################10.7")
+
 	dataValue, err := converter.ConvertToVapi(route_obj, model.RouteBasedIPSecVpnSessionBindingType())
-	log.Println("########################################################10.7")
 	if err != nil {
 		return nil, err[0]
 	}
@@ -337,7 +293,6 @@ func resourceNsxtPolicyIPSecVpnSessionCreate(d *schema.ResourceData, m interface
 
 	err2 := client.Patch(Tier0ID, LocaleService, ServiceID, id, obj)
 
-	log.Println("########################################################")
 	if err2 != nil {
 		return handleCreateError("IPSecVpnSession", id, err)
 	}
@@ -354,7 +309,6 @@ func resourceNsxtPolicyIPSecVpnSessionRead(d *schema.ResourceData, m interface{}
 	converter.SetMode(bindings.REST)
 
 	id := d.Id()
-	log.Println(id)
 	if id == "" {
 		return fmt.Errorf("Error obtaining IPSecVpnSession ID")
 	}
@@ -425,7 +379,22 @@ func resourceNsxtPolicyIPSecVpnSessionUpdate(d *schema.ResourceData, m interface
 
 }
 
+func resourceNsxtPolicyVPNBgpNeighborDelete(tier0 string, locale_service string, bgp_id string, connector *client.RestConnector) error {
+	var err error
+
+	client := bgp.NewDefaultNeighborsClient(connector)
+
+	err = client.Delete(tier0, locale_service, bgp_id, nil)
+
+	if err != nil {
+		return handleDeleteError("BgpNeighbor", bgp_id, err)
+	}
+
+	return nil
+}
+
 func resourceNsxtPolicyIPSecVpnSessionDelete(d *schema.ResourceData, m interface{}) error {
+
 	id := d.Id()
 	if id == "" {
 		return fmt.Errorf("Error obtaining IPSecVpnSession ID")
@@ -435,6 +404,7 @@ func resourceNsxtPolicyIPSecVpnSessionDelete(d *schema.ResourceData, m interface
 	ServiceID := d.Get("service_id").(string)
 
 	connector := getPolicyConnector(m)
+
 	var err error
 	client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
 	err = client.Delete(Tier0ID, LocaleService, ServiceID, id)
