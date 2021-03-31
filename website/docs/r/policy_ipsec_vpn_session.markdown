@@ -15,21 +15,24 @@ This resource is applicable to NSX Policy Manager and VMC.
 
 ```hcl
 resource "nsxt_policy_ipsec_vpn_session" "test" {
-    display_name      = "test"
-    description       = "Terraform provisioned IPSec VPN Ike session"
-    ike_profile_path    = nsxt_policy_ipsec_vpn_ike_profile.profile_ike.path
-    tunnel_profile_path = nsxt_policy_ipsec_vpn_tunnel_profile.profile_tunnel.path
-    enabled             = true
-    locale_service      = "default"
-    service_id          = "default"
-    tier0_id            = "vmc"
-    vpn_type            = "RouteBasedIPSecVpnSession"
-    compliance_suite    = "NONE"
-    subnets             = ["169.254.151.2"]
-    prefix_length       = 30
-    peer_address        = "12.12.12.12"
-    peer_id             = "12.12.12.12"
-    psk                 = "None"
+    display_name               = "Route-Based VPN Session"
+    description                = "Terraform-provisioned IPsec Route-Based VPN"
+    ike_profile_path           = nsxt_policy_ipsec_vpn_ike_profile.profile_ike_l3vpn.path
+    tunnel_profile_path        = nsxt_policy_ipsec_vpn_tunnel_profile.profile_tunnel_l3vpn.path
+    local_endpoint_path        = data.nsxt_policy_ipsec_vpn_local_endpoint.private_endpoint.path
+    enabled                    = true
+    locale_service             = "default"
+    service_id                 = "default"
+    tier0_id                   = "vmc"
+    vpn_type                   = "RouteBasedIPSecVpnSession"
+    authentication_mode        = "PSK"
+    compliance_suite           = "NONE"
+    subnets                    = ["169.254.152.2"]
+    prefix_length              = 30
+    peer_address               = "18.18.18.19"
+    peer_id                    = "18.18.18.19"
+    psk                        = "VMware123!"
+    connection_initiation_mode = "INITIATOR"
 }
 ```
 
@@ -54,6 +57,7 @@ The following arguments are supported:
 * `prefix_length` - (Optional) Subnet Prefix Length.
 * `peer_address` - (Optional) Public IPV4 address of the remote device terminating the VPN connection.
 * `peer_id` - (Optional) Peer ID to uniquely identify the peer site. The peer ID is the public IP address of the remote device terminating the VPN tunnel. When NAT is configured for the peer, enter the private IP address of the peer.
+* `local_endpoint_path` - (Optional) Policy path referencing Local endpoint. In VMC, Local Endpoints are pre-configured the user can refer to their path using `data nsxt_policy_ipsec_vpn_local_endpoint` and using the "Private IP1" or "Public IP1" values to refer to the private and public endpoints respectively.
 
 ## Attributes Reference
 
