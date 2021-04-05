@@ -70,7 +70,7 @@ func resourceNsxtPolicyL2VPNSessionCreate(d *schema.ResourceData, m interface{})
 	Tier0ID := d.Get("tier0_id").(string)
 	LocaleService := d.Get("locale_service").(string)
 	ServiceID := d.Get("service_id").(string)
-	Transport_Tunnel := getStringListFromSchemaList(d, "transport_tunnels")
+	TransportTunnel := getStringListFromSchemaList(d, "transport_tunnels")
 
 	// Initialize resource Id and verify this ID is not yet used
 	id := "l2vpn_id"
@@ -87,7 +87,7 @@ func resourceNsxtPolicyL2VPNSessionCreate(d *schema.ResourceData, m interface{})
 		DisplayName:      &displayName,
 		Description:      &description,
 		Tags:             tags,
-		TransportTunnels: Transport_Tunnel,
+		TransportTunnels: TransportTunnel,
 	}
 
 	// Create the resource using PATCH
@@ -142,7 +142,7 @@ func resourceNsxtPolicyL2VPNSessionUpdate(d *schema.ResourceData, m interface{})
 	Tier0ID := d.Get("tier0_id").(string)
 	LocaleService := d.Get("locale_service").(string)
 	ServiceID := d.Get("service_id").(string)
-	Transport_Tunnel := getStringListFromSchemaList(d, "transport_tunnels")
+	TransportTunnel := getStringListFromSchemaList(d, "transport_tunnels")
 
 	id := d.Id()
 	if id == "" {
@@ -158,7 +158,7 @@ func resourceNsxtPolicyL2VPNSessionUpdate(d *schema.ResourceData, m interface{})
 		DisplayName:      &displayName,
 		Description:      &description,
 		Tags:             tags,
-		TransportTunnels: Transport_Tunnel,
+		TransportTunnels: TransportTunnel,
 	}
 
 	// Update the resource using PATCH

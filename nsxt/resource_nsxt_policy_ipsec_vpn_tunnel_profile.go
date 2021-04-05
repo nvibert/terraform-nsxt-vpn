@@ -14,7 +14,7 @@ import (
 	"github.com/vmware/vsphere-automation-sdk-go/services/nsxt/model"
 )
 
-var IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS = []string{
+var IPSecVpnTunnelProfileEncryptionAlgorithms = []string{
 	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_AES_128,
 	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_AES_256,
 	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_AES_GCM_128,
@@ -26,7 +26,7 @@ var IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS = []string{
 	model.IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS_NO_ENCRYPTION,
 }
 
-var IPSecVpnTunnelProfile_DIGEST_ALGORITHMS = []string{
+var IPSecVpnTunnelProfileDigestAlgorithms = []string{
 	model.IPSecVpnTunnelProfile_DIGEST_ALGORITHMS_SHA1,
 	model.IPSecVpnTunnelProfile_DIGEST_ALGORITHMS_SHA2_256,
 	model.IPSecVpnTunnelProfile_DIGEST_ALGORITHMS_SHA2_384,
@@ -66,7 +66,7 @@ func resourceNsxtPolicyIpsecVpnTunnelProfile() *schema.Resource {
 				Description: "Encryption algorithm to encrypt/decrypt the messages exchanged between IPSec VPN initiator and responder during tunnel negotiation. Default is AES_GCM_128.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfile_ENCRYPTION_ALGORITHMS, false),
+					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfileEncryptionAlgorithms, false),
 				},
 				Optional: true,
 			},
@@ -75,7 +75,7 @@ func resourceNsxtPolicyIpsecVpnTunnelProfile() *schema.Resource {
 				Description: "Algorithm to be used for message digest. Default digest algorithm is implicitly covered by default encryption algorithm \"AES_GCM_128\".",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfile_DIGEST_ALGORITHMS, false),
+					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfileDigestAlgorithms, false),
 				},
 				Optional: true,
 			},

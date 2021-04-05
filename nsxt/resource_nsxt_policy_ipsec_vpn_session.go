@@ -6,35 +6,37 @@ package nsxt
 import (
 	"fmt"
 	"log"
-	"strconv"
-	"strings"
+
+	//"strconv"
+	//"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/vmware/vsphere-automation-sdk-go/runtime/bindings"
 	"github.com/vmware/vsphere-automation-sdk-go/runtime/data"
-	"github.com/vmware/vsphere-automation-sdk-go/runtime/protocol/client"
-	"github.com/vmware/vsphere-automation-sdk-go/services/nsxt/infra/tier_0s/locale_services/bgp"
+
+	//"github.com/vmware/vsphere-automation-sdk-go/runtime/protocol/client"
+	//"github.com/vmware/vsphere-automation-sdk-go/services/nsxt/infra/tier_0s/locale_services/bgp"
 	ipsec_vpn_services "github.com/vmware/vsphere-automation-sdk-go/services/nsxt/infra/tier_0s/locale_services/ipsec_vpn_services"
 	"github.com/vmware/vsphere-automation-sdk-go/services/nsxt/model"
 )
 
-var IPSecVpnSession_RESOURCE_TYPE = []string{
+var IPSecVpnSessionResourceType = []string{
 	model.IPSecVpnSession_RESOURCE_TYPE_POLICYBASEDIPSECVPNSESSION,
 	model.IPSecVpnSession_RESOURCE_TYPE_ROUTEBASEDIPSECVPNSESSION,
 }
 
-var IPSecVpnSession_AUTHENTICATION_MODE = []string{
+var IPSecVpnSessionAuthenticationMode = []string{
 	model.IPSecVpnSession_AUTHENTICATION_MODE_PSK,
 	model.IPSecVpnSession_AUTHENTICATION_MODE_CERTIFICATE,
 }
 
-var IPSecVpnSession_CONNECTION_INITIATION_MODE = []string{
+var IPSecVpnSessionConnectionInitiationMode = []string{
 	model.IPSecVpnSession_CONNECTION_INITIATION_MODE_INITIATOR,
 	model.IPSecVpnSession_CONNECTION_INITIATION_MODE_RESPOND_ONLY,
 	model.IPSecVpnSession_CONNECTION_INITIATION_MODE_ON_DEMAND,
 }
-var IPSecVpnSession_COMPLIANCE_SUITE = []string{
+var IPSecVpnSessionComplianceSuite = []string{
 	model.IPSecVpnSession_COMPLIANCE_SUITE_CNSA,
 	model.IPSecVpnSession_COMPLIANCE_SUITE_SUITE_B_GCM_128,
 	model.IPSecVpnSession_COMPLIANCE_SUITE_SUITE_B_GCM_256,
@@ -64,26 +66,26 @@ func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 			"vpn_type": {
 				Type:         schema.TypeString,
 				Description:  "A Policy Based VPN requires to define protect rules that match local and peer subnets. IPSec security associations is negotiated for each pair of local and peer subnet. A Route Based VPN is more flexible, more powerful and recommended over policy based VPN. IP Tunnel port is created and all traffic routed via tunnel port is protected. Routes can be configured statically or can be learned through BGP. A route based VPN is must for establishing redundant VPN session to remote site.",
-				ValidateFunc: validation.StringInSlice(IPSecVpnSession_RESOURCE_TYPE, false),
+				ValidateFunc: validation.StringInSlice(IPSecVpnSessionResourceType, false),
 				Optional:     true,
 			},
 			"compliance_suite": {
 				Type:         schema.TypeString,
 				Description:  "Connection initiation mode used by local endpoint to establish ike connection with peer site. INITIATOR - In this mode local endpoint initiates tunnel setup and will also respond to incoming tunnel setup requests from peer gateway. RESPOND_ONLY - In this mode, local endpoint shall only respond to incoming tunnel setup requests. It shall not initiate the tunnel setup. ON_DEMAND - In this mode local endpoint will initiate tunnel creation once first packet matching the policy rule is received and will also respond to incoming initiation request.",
-				ValidateFunc: validation.StringInSlice(IPSecVpnSession_COMPLIANCE_SUITE, false),
+				ValidateFunc: validation.StringInSlice(IPSecVpnSessionComplianceSuite, false),
 				Optional:     true,
 			},
 			"connection_initiation_mode": {
 				Type:         schema.TypeString,
 				Description:  "Compliance suite.",
-				ValidateFunc: validation.StringInSlice(IPSecVpnSession_CONNECTION_INITIATION_MODE, false),
+				ValidateFunc: validation.StringInSlice(IPSecVpnSessionConnectionInitiationMode, false),
 				Optional:     true,
 				Default:      "INITIATOR",
 			},
 			"authentication_mode": {
 				Type:         schema.TypeString,
 				Description:  "Peer authentication mode. PSK - In this mode a secret key shared between local and peer sites is to be used for authentication. The secret key can be a string with a maximum length of 128 characters. CERTIFICATE - In this mode a certificate defined at the global level is to be used for authentication.",
-				ValidateFunc: validation.StringInSlice(IPSecVpnSession_AUTHENTICATION_MODE, false),
+				ValidateFunc: validation.StringInSlice(IPSecVpnSessionAuthenticationMode, false),
 				Optional:     true,
 				Default:      "PSK",
 			},
@@ -166,47 +168,12 @@ func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 	}
 }
 
-func resourceNsxtPolicyIPSecVpnSessionExists(tier0IdParam string, localeServiceIdParam string, serviceIdParam string, sessionIdParam string, connector *client.RestConnector, isGlobalManager bool) (bool, error) {
-	client := ipsec_vpn_services.NewDefaultSessionsClient(connector)
-	_, err := client.Get(tier0IdParam, localeServiceIdParam, serviceIdParam, sessionIdParam)
-
-	if err == nil {
-		return true, nil
-	}
-
-	if isNotFoundError(err) {
-		return false, nil
-	}
-
-	return false, logAPIError("Error retrieving resource", err)
-
-}
-
-func getTunnelInterfaceSubnetList(d *schema.ResourceData) []model.TunnelInterfaceIPSubnet {
-	subnets := interface2StringList(d.Get("subnets").([]interface{}))
-	var TunnelInterfaceSubnetList []model.TunnelInterfaceIPSubnet
-	for _, subnet := range subnets {
-		result := strings.Split(subnet, "/")
-		var ipAddresses []string
-		ipAddresses = append(ipAddresses, result[0])
-		prefix, _ := strconv.Atoi(result[1])
-		prefix64 := int64(prefix)
-		TunnelinterfaceSubnet := model.TunnelInterfaceIPSubnet{
-			IpAddresses:  ipAddresses,
-			PrefixLength: &prefix64,
-		}
-		TunnelInterfaceSubnetList = append(TunnelInterfaceSubnetList, TunnelinterfaceSubnet)
-	}
-
-	return TunnelInterfaceSubnetList
-}
-
 func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, error) {
 	converter := bindings.NewTypeConverter()
 	converter.SetMode(bindings.REST)
 
 	Psk := d.Get("psk").(string)
-	PeerId := d.Get("peer_id").(string)
+	PeerID := d.Get("peer_id").(string)
 	PeerAddress := d.Get("peer_address").(string)
 	displayName := d.Get("display_name").(string)
 	description := d.Get("description").(string)
@@ -258,7 +225,7 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 		Enabled:                  &Enabled,
 		TunnelInterfaces:         VTIlist,
 		PeerAddress:              &PeerAddress,
-		PeerId:                   &PeerId,
+		PeerId:                   &PeerID,
 		Psk:                      &Psk,
 	}
 
@@ -377,20 +344,6 @@ func resourceNsxtPolicyIPSecVpnSessionUpdate(d *schema.ResourceData, m interface
 	d.Set("nsx_id", id)
 	return resourceNsxtPolicyIPSecVpnSessionRead(d, m)
 
-}
-
-func resourceNsxtPolicyVPNBgpNeighborDelete(tier0 string, locale_service string, bgp_id string, connector *client.RestConnector) error {
-	var err error
-
-	client := bgp.NewDefaultNeighborsClient(connector)
-
-	err = client.Delete(tier0, locale_service, bgp_id, nil)
-
-	if err != nil {
-		return handleDeleteError("BgpNeighbor", bgp_id, err)
-	}
-
-	return nil
 }
 
 func resourceNsxtPolicyIPSecVpnSessionDelete(d *schema.ResourceData, m interface{}) error {

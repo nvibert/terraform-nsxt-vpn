@@ -29,7 +29,7 @@ var IPSecVpnIkeProfile_DIGEST_ALGORITHMS = []string{
 	model.IPSecVpnIkeProfile_DIGEST_ALGORITHMS_SHA2_512,
 }
 
-var IPSecVpnIkeProfile_DH_GROUPS = []string{
+var IPSecVpnIkeProfileDhGroups = []string{
 	model.IPSecVpnIkeProfile_DH_GROUPS_GROUP14,
 	model.IPSecVpnIkeProfile_DH_GROUPS_GROUP2,
 	model.IPSecVpnIkeProfile_DH_GROUPS_GROUP15,
@@ -92,7 +92,7 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 				Description: "Diffie-Hellman group to be used if PFS is enabled. Default is GROUP14.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfile_DH_GROUPS, false),
+					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfileDhGroups, false),
 				},
 				Optional: true,
 			},
@@ -128,7 +128,7 @@ func resourceNsxtPolicyIpsecVpnIkeProfileCreate(d *schema.ResourceData, m interf
 
 	displayName := d.Get("display_name").(string)
 	description := d.Get("description").(string)
-	ike_version := d.Get("ike_version").(string)
+	ikeVersion := d.Get("ike_version").(string)
 	DhGroups := getStringListFromSchemaSet(d, "dh_groups")
 	DigestAlgorithms := getStringListFromSchemaSet(d, "digest_algorithms")
 	EncryptionAlgorithms := getStringListFromSchemaSet(d, "encryption_algorithms")
@@ -136,7 +136,7 @@ func resourceNsxtPolicyIpsecVpnIkeProfileCreate(d *schema.ResourceData, m interf
 	obj := model.IPSecVpnIkeProfile{
 		DisplayName:          &displayName,
 		Description:          &description,
-		IkeVersion:           &ike_version,
+		IkeVersion:           &ikeVersion,
 		DhGroups:             DhGroups,
 		DigestAlgorithms:     DigestAlgorithms,
 		EncryptionAlgorithms: EncryptionAlgorithms,
@@ -190,14 +190,14 @@ func resourceNsxtPolicyIpsecVpnIkeProfileUpdate(d *schema.ResourceData, m interf
 	}
 	displayName := d.Get("display_name").(string)
 	description := d.Get("description").(string)
-	ike_version := d.Get("ike_version").(string)
+	ikeVersion := d.Get("ike_version").(string)
 	DhGroups := getStringListFromSchemaSet(d, "dh_groups")
 	DigestAlgorithms := getStringListFromSchemaSet(d, "digest_algorithms")
 	EncryptionAlgorithms := getStringListFromSchemaSet(d, "encryption_algorithms")
 	obj := model.IPSecVpnIkeProfile{
 		DisplayName:          &displayName,
 		Description:          &description,
-		IkeVersion:           &ike_version,
+		IkeVersion:           &ikeVersion,
 		DhGroups:             DhGroups,
 		DigestAlgorithms:     DigestAlgorithms,
 		EncryptionAlgorithms: EncryptionAlgorithms,
