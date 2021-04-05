@@ -33,7 +33,7 @@ var IPSecVpnTunnelProfileDigestAlgorithms = []string{
 	model.IPSecVpnTunnelProfile_DIGEST_ALGORITHMS_SHA2_512,
 }
 
-var IPSecVpnTunnelProfile_DH_GROUPS = []string{
+var interfaceVIPSecVpnTunnelProfileDhGroups = []string{
 	model.IPSecVpnTunnelProfile_DH_GROUPS_GROUP14,
 	model.IPSecVpnTunnelProfile_DH_GROUPS_GROUP2,
 	model.IPSecVpnTunnelProfile_DH_GROUPS_GROUP5,
@@ -84,7 +84,7 @@ func resourceNsxtPolicyIpsecVpnTunnelProfile() *schema.Resource {
 				Description: "Diffie-Hellman group to be used if PFS is enabled. Default is GROUP14.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnTunnelProfile_DH_GROUPS, false),
+					ValidateFunc: validation.StringInSlice(interfaceVIPSecVpnTunnelProfileDhGroups, false),
 				},
 				Optional: true,
 			},

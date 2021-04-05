@@ -191,14 +191,14 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	ConnectionInitiationMode := d.Get("connection_initiation_mode").(string)
 	AuthenticationMode := d.Get("authentication_mode").(string)
 	ComplianceSuite := d.Get("compliance_suite").(string)
-	Prefix_length := int64(d.Get("prefix_length").(int))
+	PrefixLengh := int64(d.Get("prefix_length").(int))
 	Enabled := d.Get("enabled").(bool)
 
 	TunnelInterface := interfaceListToStringList(d.Get("subnets").([]interface{}))
 	var IPSubnets []model.TunnelInterfaceIPSubnet
 	IPSubnet := model.TunnelInterfaceIPSubnet{
 		IpAddresses:  TunnelInterface,
-		PrefixLength: &Prefix_length,
+		PrefixLength: &PrefixLengh,
 	}
 	IPSubnets = append(IPSubnets, IPSubnet)
 	var VTIlist []model.IPSecVpnTunnelInterface
@@ -211,7 +211,7 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	VTIlist = append(VTIlist, vti)
 
 	//if ResourceType == "RouteBasedIPSecVpnSession":
-	route_obj := model.RouteBasedIPSecVpnSession{
+	routeObj := model.RouteBasedIPSecVpnSession{
 		DisplayName:              &displayName,
 		Description:              &description,
 		IkeProfilePath:           &IkeProfilePath,
@@ -229,7 +229,7 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 		Psk:                      &Psk,
 	}
 
-	dataValue, err := converter.ConvertToVapi(route_obj, model.RouteBasedIPSecVpnSessionBindingType())
+	dataValue, err := converter.ConvertToVapi(routeObj, model.RouteBasedIPSecVpnSessionBindingType())
 	if err != nil {
 		return nil, err[0]
 	}
@@ -297,11 +297,11 @@ func resourceNsxtPolicyIPSecVpnSessionRead(d *schema.ResourceData, m interface{}
 		return handleReadError(d, "VPN Session", id, err)
 	}
 
-	interface_vpn, errs := converter.ConvertToGolang(obj, model.RouteBasedIPSecVpnSessionBindingType())
+	interfaceVpn, errs := converter.ConvertToGolang(obj, model.RouteBasedIPSecVpnSessionBindingType())
 	if len(errs) > 0 {
 		return fmt.Errorf("Error converting VPN Session %s", errs[0])
 	}
-	blockVPN := interface_vpn.(model.RouteBasedIPSecVpnSession)
+	blockVPN := interfaceVpn.(model.RouteBasedIPSecVpnSession)
 
 	d.Set("display_name", blockVPN.DisplayName)
 	d.Set("description", blockVPN.Description)

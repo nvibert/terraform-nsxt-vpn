@@ -14,7 +14,7 @@ import (
 	"github.com/vmware/vsphere-automation-sdk-go/services/nsxt/model"
 )
 
-var IPSecVpnIkeProfile_ENCRYPTION_ALGORITHMS = []string{
+var IPSecVpnIkeProfileEncryptionAlgorithms = []string{
 	model.IPSecVpnIkeProfile_ENCRYPTION_ALGORITHMS_128,
 	model.IPSecVpnIkeProfile_ENCRYPTION_ALGORITHMS_256,
 	model.IPSecVpnIkeProfile_ENCRYPTION_ALGORITHMS_GCM_128,
@@ -22,7 +22,7 @@ var IPSecVpnIkeProfile_ENCRYPTION_ALGORITHMS = []string{
 	model.IPSecVpnIkeProfile_ENCRYPTION_ALGORITHMS_256,
 }
 
-var IPSecVpnIkeProfile_DIGEST_ALGORITHMS = []string{
+var IPSecVpnIkeProfileDigestAlgorithms = []string{
 	model.IPSecVpnIkeProfile_DIGEST_ALGORITHMS_SHA1,
 	model.IPSecVpnIkeProfile_DIGEST_ALGORITHMS_SHA2_256,
 	model.IPSecVpnIkeProfile_DIGEST_ALGORITHMS_SHA2_384,
@@ -74,7 +74,7 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 				Description: "Encryption algorithm is used during Internet Key Exchange(IKE) negotiation. Default is AES_128.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfile_ENCRYPTION_ALGORITHMS, false),
+					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfileEncryptionAlgorithms, false),
 				},
 				Optional: true,
 			},
@@ -83,7 +83,7 @@ func resourceNsxtPolicyIpsecVpnIkeProfile() *schema.Resource {
 				Description: "Algorithm to be used for message digest during Internet Key Exchange(IKE) negotiation. Default is SHA2_256.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfile_DIGEST_ALGORITHMS, false),
+					ValidateFunc: validation.StringInSlice(IPSecVpnIkeProfileDigestAlgorithms, false),
 				},
 				Optional: true,
 			},
