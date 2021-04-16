@@ -46,6 +46,11 @@ var IPSecVpnSessionComplianceSuite = []string{
 	model.IPSecVpnSession_COMPLIANCE_SUITE_NONE,
 }
 
+var IPSecRulesActionValues = []string{
+	model.IPSecVpnRule_ACTION_PROTECT,
+	model.IPSecVpnRule_ACTION_BYPASS,
+}
+
 func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceNsxtPolicyIPSecVpnSessionCreate,
@@ -158,6 +163,27 @@ func resourceNsxtPolicyIPSecVpnSession() *schema.Resource {
 					ValidateFunc: validateSingleIP(),
 				},
 			},
+			/*
+				"sources": {
+					Type:        schema.TypeList,
+					Description: "List of local subnets. Specifying no value is interpreted as 0.0.0.0/0.",
+					Optional:    true,
+					Elem: &schema.Schema{
+						Type:         schema.TypeString,
+						ValidateFunc: validateCidrOrIPOrRange(),
+					},
+				},
+				"destinations": {
+					Type:        schema.TypeList,
+					Description: "List of remote subnets used in policy-based L3Vpn.",
+					Optional:    true,
+					Elem: &schema.Schema{
+						Type:         schema.TypeString,
+						ValidateFunc: validateCidrOrIPOrRange(),
+					},
+				},
+			*/
+			"rule": getIPSecVPNRulesSchema(),
 			"prefix_length": {
 				Type:         schema.TypeInt,
 				Description:  "Subnet Prefix Length.",
@@ -194,47 +220,243 @@ func getIPSecVPNSessionFromSchema(d *schema.ResourceData) (*data.StructValue, er
 	PrefixLengh := int64(d.Get("prefix_length").(int))
 	Enabled := d.Get("enabled").(bool)
 
-	TunnelInterface := interfaceListToStringList(d.Get("subnets").([]interface{}))
-	var IPSubnets []model.TunnelInterfaceIPSubnet
-	IPSubnet := model.TunnelInterfaceIPSubnet{
-		IpAddresses:  TunnelInterface,
-		PrefixLength: &PrefixLengh,
+	if ResourceType == "RouteBasedIPSecVpnSession" {
+		TunnelInterface := interfaceListToStringList(d.Get("subnets").([]interface{}))
+		var IPSubnets []model.TunnelInterfaceIPSubnet
+		IPSubnet := model.TunnelInterfaceIPSubnet{
+			IpAddresses:  TunnelInterface,
+			PrefixLength: &PrefixLengh,
+		}
+		IPSubnets = append(IPSubnets, IPSubnet)
+		var VTIlist []model.IPSecVpnTunnelInterface
+
+		vti := model.IPSecVpnTunnelInterface{
+			IpSubnets:   IPSubnets,
+			DisplayName: &displayName,
+		}
+
+		VTIlist = append(VTIlist, vti)
+
+		routeObj := model.RouteBasedIPSecVpnSession{
+			DisplayName:              &displayName,
+			Description:              &description,
+			IkeProfilePath:           &IkeProfilePath,
+			LocalEndpointPath:        &LocalEndpointPath,
+			TunnelProfilePath:        &TunnelProfilePath,
+			DpdProfilePath:           &DpdProfilePath,
+			ConnectionInitiationMode: &ConnectionInitiationMode,
+			ComplianceSuite:          &ComplianceSuite,
+			AuthenticationMode:       &AuthenticationMode,
+			ResourceType:             ResourceType,
+			Enabled:                  &Enabled,
+			TunnelInterfaces:         VTIlist,
+			PeerAddress:              &PeerAddress,
+			PeerId:                   &PeerID,
+			Psk:                      &Psk,
+		}
+
+		dataValue, err := converter.ConvertToVapi(routeObj, model.RouteBasedIPSecVpnSessionBindingType())
+		if err != nil {
+			return nil, err[0]
+		}
+		return dataValue.(*data.StructValue), nil
 	}
-	IPSubnets = append(IPSubnets, IPSubnet)
-	var VTIlist []model.IPSecVpnTunnelInterface
 
-	vti := model.IPSecVpnTunnelInterface{
-		IpSubnets:   IPSubnets,
-		DisplayName: &displayName,
+	if ResourceType == "PolicyBasedIPSecVpnSession" {
+		log.Println("#################################################1")
+		IPSecVpnRules := getIPSecVPNRulesFromSchema(d)
+		log.Println("#################################################10")
+		/*
+
+			var exampleSubnet string
+			exampleSubnet = "10.10.10.0/24"
+			log.Println("#################################################")
+			log.Println(exampleSubnet)
+			DestinationsObj := model.IPSecVpnSubnet{
+				Subnet: &exampleSubnet,
+			}
+			log.Println(DestinationsObj)
+			var DestinationsObjects []model.IPSecVpnSubnet
+			DestinationsObjects = append(DestinationsObjects, DestinationsObj)
+			var sourceSubnet string
+			sourceSubnet = "10.10.11.0/24"
+			SourcesObj := model.IPSecVpnSubnet{
+				Subnet: &sourceSubnet,
+			}
+			var SourcesObjects []model.IPSecVpnSubnet
+			SourcesObjects = append(SourcesObjects, SourcesObj)
+
+			rule_id := newUUID()
+			var resourceType string
+			resourceType = "IPSecVpnRule"
+			//var action string
+			//action = "PROTECT"
+			IPSecVpnRule := model.IPSecVpnRule{
+				Sources:      SourcesObjects,
+				Destinations: DestinationsObjects,
+				UniqueId:     &rule_id,
+				Id:           &rule_id,
+				ResourceType: &resourceType,
+				//Action:       &action,
+			}
+			log.Println(IPSecVpnRule)
+			var IPSecVpnRules []model.IPSecVpnRule
+			IPSecVpnRules = append(IPSecVpnRules, IPSecVpnRule)
+		*/
+		policyObj := model.PolicyBasedIPSecVpnSession{
+			DisplayName:              &displayName,
+			Description:              &description,
+			IkeProfilePath:           &IkeProfilePath,
+			LocalEndpointPath:        &LocalEndpointPath,
+			TunnelProfilePath:        &TunnelProfilePath,
+			DpdProfilePath:           &DpdProfilePath,
+			ConnectionInitiationMode: &ConnectionInitiationMode,
+			ComplianceSuite:          &ComplianceSuite,
+			AuthenticationMode:       &AuthenticationMode,
+			ResourceType:             ResourceType,
+			Enabled:                  &Enabled,
+			Rules:                    IPSecVpnRules,
+			PeerAddress:              &PeerAddress,
+			PeerId:                   &PeerID,
+			Psk:                      &Psk,
+		}
+		dataValue, err := converter.ConvertToVapi(policyObj, model.PolicyBasedIPSecVpnSessionBindingType())
+		if err != nil {
+			return nil, err[0]
+		}
+		return dataValue.(*data.StructValue), nil
+
 	}
 
-	VTIlist = append(VTIlist, vti)
+	var err error
+	return nil, err
+}
 
-	//if ResourceType == "RouteBasedIPSecVpnSession":
-	routeObj := model.RouteBasedIPSecVpnSession{
-		DisplayName:              &displayName,
-		Description:              &description,
-		IkeProfilePath:           &IkeProfilePath,
-		LocalEndpointPath:        &LocalEndpointPath,
-		TunnelProfilePath:        &TunnelProfilePath,
-		DpdProfilePath:           &DpdProfilePath,
-		ConnectionInitiationMode: &ConnectionInitiationMode,
-		ComplianceSuite:          &ComplianceSuite,
-		AuthenticationMode:       &AuthenticationMode,
-		ResourceType:             ResourceType,
-		Enabled:                  &Enabled,
-		TunnelInterfaces:         VTIlist,
-		PeerAddress:              &PeerAddress,
-		PeerId:                   &PeerID,
-		Psk:                      &Psk,
+func getIPSecVPNRulesSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "For policy-based IPsec VPNs, a security policy specifies as its action the VPN tunnel to be used for transit traffic that meets the policy’s match criteria.",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"sources": {
+					Type:        schema.TypeSet,
+					Description: "List of local subnets. Specifying no value is interpreted as 0.0.0.0/0.",
+					Elem: &schema.Schema{
+						Type:         schema.TypeString,
+						ValidateFunc: validateCidr(),
+					},
+					Required: true,
+				},
+				"destinations": {
+					Type:        schema.TypeSet,
+					Description: "List of remote subnets used in policy-based L3Vpn.",
+					Elem: &schema.Schema{
+						Type:         schema.TypeString,
+						ValidateFunc: validateCidr(),
+					},
+					Required: true,
+				},
+				"action": {
+					Type:         schema.TypeString,
+					Description:  "PROTECT - Protect rules are defined per policy based IPSec VPN session. BYPASS - Bypass rules are defined per IPSec VPN service and affects all policy based IPSec VPN sessions. Bypass rules are prioritized over protect rules.",
+					Default:      model.IPSecVpnRule_ACTION_PROTECT,
+					Optional:     true,
+					ValidateFunc: validation.StringInSlice(IPSecRulesActionValues, false),
+				},
+			},
+		},
 	}
+}
 
-	dataValue, err := converter.ConvertToVapi(routeObj, model.RouteBasedIPSecVpnSessionBindingType())
-	if err != nil {
-		return nil, err[0]
+//func getSubnetsFromSchema(d *schema.ResourceData) []manager.IpPoolSubnet {
+//subnets := d.Get("subnet").([]interface{})
+//var subnetsList []manager.IpPoolSubnet
+//for _, subnet := range subnets {
+//	data := subnet.(map[string]interface{})
+//	elem := manager.IpPoolSubnet{
+//		Cidr:             data["cidr"].(string),
+//		DnsSuffix:        data["dns_suffix"].(string),
+//		GatewayIp:        data["gateway_ip"].(string),
+//		DnsNameservers:   interface2StringList(data["dns_nameservers"].([]interface{})),
+//		AllocationRanges: getAllocationRangesFromRanges(data["allocation_ranges"].([]interface{})),
+//	}
+//
+//	subnetsList = append(subnetsList, elem)
+//}
+//	return subnetsList
+//}
+
+func getSourcesSubnetsFromSchema(d *schema.ResourceData) []model.IPSecVpnSubnet {
+	IPSecVpnSubnets := d.Get("sources").(*schema.Set).List()
+	IPSecVpnSubnetList := make([]model.IPSecVpnSubnet, 0)
+	for _, subnet := range IPSecVpnSubnets {
+		data := subnet.(map[string]interface{})
+		subnet := data["sources"].(string)
+		elem := model.IPSecVpnSubnet{
+			Subnet: &subnet,
+		}
+		IPSecVpnSubnetList = append(IPSecVpnSubnetList, elem)
 	}
+	return IPSecVpnSubnetList
+}
 
-	return dataValue.(*data.StructValue), nil
+func getIPSecVPNRulesFromSchema(d *schema.ResourceData) []model.IPSecVpnRule {
+	rules := d.Get("rule").([]interface{})
+	log.Println("#################################################2")
+	var ruleList []model.IPSecVpnRule
+	for _, rule := range rules {
+		data := rule.(map[string]interface{})
+		log.Println("#################################################3")
+		action := data["action"].(string)
+		log.Println(action)
+		log.Println("#################################################4")
+		sourceRanges := interface2StringList(data["sources"].(*schema.Set).List())
+		destinationRanges := interface2StringList(data["destinations"].(*schema.Set).List())
+
+		/// Source Subnets
+
+		log.Println("#################################################5")
+		SourceIPSecVpnSubnetList := make([]model.IPSecVpnSubnet, 0)
+		if len(sourceRanges) > 0 {
+			for _, element := range sourceRanges {
+				subnet := element
+				log.Println("#################################################6")
+				log.Println(subnet)
+				IPSecVpnSubnet := model.IPSecVpnSubnet{
+					Subnet: &subnet,
+				}
+				SourceIPSecVpnSubnetList = append(SourceIPSecVpnSubnetList, IPSecVpnSubnet)
+			}
+		}
+
+		/// Destination Subnets
+		DestinationIPSecVpnSubnetList := make([]model.IPSecVpnSubnet, 0)
+		if len(destinationRanges) > 0 {
+			for _, element := range destinationRanges {
+				subnet := element
+				log.Println("#################################################6")
+				log.Println(subnet)
+				IPSecVpnSubnet := model.IPSecVpnSubnet{
+					Subnet: &subnet,
+				}
+				DestinationIPSecVpnSubnetList = append(DestinationIPSecVpnSubnetList, IPSecVpnSubnet)
+			}
+		}
+
+		rule_id := newUUID()
+		log.Println("#################################################")
+		elem := model.IPSecVpnRule{
+			Action:       &action,
+			Sources:      SourceIPSecVpnSubnetList,
+			Destinations: DestinationIPSecVpnSubnetList,
+			UniqueId:     &rule_id,
+			Id:           &rule_id,
+		}
+		ruleList = append(ruleList, elem)
+		log.Println("#################################################")
+	}
+	return ruleList
 }
 
 func resourceNsxtPolicyIPSecVpnSessionCreate(d *schema.ResourceData, m interface{}) error {
